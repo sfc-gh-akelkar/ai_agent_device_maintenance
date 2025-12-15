@@ -271,7 +271,43 @@ SELECT RISK_LEVEL, COUNT(*) FROM V_DEVICE_HEALTH_SUMMARY GROUP BY RISK_LEVEL;
 > *"A health score of 71 means the fleet is in 'Good' condition. Perfect would be 100, but that's unrealistic for a 500K device fleet. What matters is identifying the devices that need attention—and the AI just surfaced exactly which 7 devices require action."*
 
 #### 🔄 Transition
-> *"Good overview—we see a fleet health score of 71, with 7 devices needing attention. But the key metric here is zero historical revenue loss. Let me show you what's at risk RIGHT NOW from our current device status..."*
+> *"Good overview—we see a fleet health score of 71, with 7 devices needing attention. But I want to make those 3 offline devices more tangible. Let me show you exactly how long they've been down..."*
+
+---
+
+### 📌 Q1b: Current Downtime Deep-Dive ⭐ REHEARSED (NEW)
+
+```
+How long have the offline devices been down and what's the revenue impact?
+```
+
+#### 👔 Who In The Room Cares
+| PatientPoint Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Mike Walsh (COO)** | "How much is this costing us RIGHT NOW?" |
+| **JT Grant (VP Ad Tech)** | "How many impressions are we losing?" |
+| **Patrick Arnold (CTO)** | "Is this real-time data?" |
+
+#### 📝 Expected Response Highlights
+- **DEV-081 (Cleveland)**: 72 hours offline, ~$1,549 lost, $516/day burn rate
+- **DEV-031 (Chicago)**: 36 hours offline, ~$450 lost, $300/day burn rate
+- **DEV-025 (Appleton)**: 18 hours offline, ~$153 lost, $204/day burn rate
+- **Total**: ~$2,152 lost, $1,020/day combined burn rate
+- **3,277 impressions lost**
+
+#### 💬 Key Talking Points
+
+**For Mike Walsh (COO):**
+> *"Mike, DEV-081 in Cleveland has been down for 72 hours—that's over $1,500 in lost ad revenue already. And it's burning $516 every day it stays down. This is the cost of reactive maintenance."*
+
+**For JT Grant (VP Ad Tech):**
+> *"JT, 3,277 impressions lost. That's pharma partner ads that didn't run. With predictive maintenance, we'd have caught DEV-081's degradation BEFORE it failed 3 days ago."*
+
+**For Patrick Arnold (CTO):**
+> *"Patrick, notice the agent calculated hours offline and revenue loss in real-time. This isn't a batch report—it's live data. The $1,549 for DEV-081 is accurate to this moment."*
+
+#### 🔄 Transition
+> *"That's $2,152 in active revenue loss from just 3 devices. Now let me show you the full revenue picture including the degraded devices..."*
 
 ---
 
@@ -480,6 +516,25 @@ GROUP BY RESOLUTION_TYPE;
 **IF ASKED: "What's not included in these savings?"**
 > *"This is conservative—it only counts dispatch avoidance. It doesn't include: revenue protection from faster resolution, customer satisfaction gains, extended device lifespan from proactive maintenance, or reduced emergency overtime costs."*
 
+#### 📐 How to Explain the Math (If Challenged)
+
+**The calculation:**
+```
+$185M = 500,000 devices × 2 issues/device/year × $185/dispatch
+$96M  = 1,000,000 dispatches × 60% remote × ($185 - $25) saved
+```
+
+**The assumptions to validate with PatientPoint:**
+| Assumption | Our Value | Question to Ask |
+|------------|-----------|-----------------|
+| Issues per device/year | 2 | "How many issues per device do you see today?" |
+| Dispatch cost | $185 | "What's your actual cost per dispatch?" |
+| Remote fix cost | $25 | "What does a remote fix cost in labor time?" |
+| Remote fix rate | 60% | "What's your remote fix rate today?" |
+
+**SAY THIS if numbers are questioned:**
+> *"These are industry benchmarks. The formula is simple—the inputs are what matter. In a POC, we plug in YOUR numbers and recalculate. If your dispatch cost is $150, savings are lower. If it's $250, they're higher. The model is the same."*
+
 #### 🎤 Executive Talking Point
 **SAY THIS after the response:**
 > *"This is the headline number for your CFO: $96 million in annual savings from a 52% reduction in field dispatches. And this is conservative—it doesn't include revenue protection from faster resolution or the customer satisfaction gains from proactive maintenance."*
@@ -540,6 +595,24 @@ FROM V_MAINTENANCE_ANALYTICS
 WHERE DATE_TRUNC('month', CREATED_AT) = DATE_TRUNC('month', CURRENT_DATE())
 ORDER BY CREATED_AT DESC;
 ```
+
+#### 📝 Expected Response Highlights
+- **$1,295 saved** this month (actual, not projected)
+- **7 remote fixes**, 0 field dispatches
+- **100% remote fix rate** (for this demo period)
+- **$185 average savings** per avoided dispatch
+- Issue types: CONNECTIVITY, DISPLAY_FREEZE, HIGH_CPU, MEMORY_LEAK, SLOW_RESPONSE, SOFTWARE_UPDATE
+
+#### 💬 Key Talking Points
+
+**For Mike Walsh (COO):**
+> *"Mike, $1,295 saved in 2 weeks from 7 tickets—all resolved remotely. That's not a projection, that's actual cost avoidance. 100% remote fix rate on software and network issues."*
+
+**For Jonathan Richman (SVP Engineering):**
+> *"Jonathan, look at the issue types: CONNECTIVITY, HIGH_CPU, MEMORY_LEAK. These are exactly the kinds of issues that don't need a truck roll. The AI triaged correctly every time."*
+
+**Connect the unit economics:**
+> *"Let me connect the numbers: $185 saved per remote fix × 7 tickets = $1,295. At production scale with 600,000 avoided dispatches, that's the $96M. Same math, bigger scale."*
 
 #### 🏗️ PatientPoint Implementation Conversation Starters
 
