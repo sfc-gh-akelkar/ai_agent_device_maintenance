@@ -16,6 +16,95 @@
 
 ---
 
+## 📡 Source Systems Being Simulated
+
+> **SAY THIS at demo start:** *"Before we begin, let me briefly explain what we're simulating. These are the source systems that would connect to Snowflake in production:"*
+
+| Source System | What We Simulate | Demo Data | PatientPoint Equivalent |
+|---------------|------------------|-----------|------------------------|
+| **IoT Platform** (AWS IoT, Azure IoT, Particle) | Device inventory, telemetry, heartbeat | `DEVICE_INVENTORY`, `DEVICE_TELEMETRY` | Your device management platform |
+| **Ad Platform** (Google Ad Manager, direct contracts) | CPM rates, impressions, revenue | `HOURLY_AD_REVENUE_USD` column | GAM or pharma partner data |
+| **Field Service** (ServiceNow, Salesforce FSL) | Work orders, dispatch, resolution | `WORK_ORDERS`, `MAINTENANCE_HISTORY` | ServiceNow or equivalent |
+| **CRM/Surveys** (Qualtrics, Salesforce) | NPS, satisfaction, complaints | `PROVIDER_FEEDBACK` | Your survey/CRM system |
+| **Knowledge Base** (Confluence, SharePoint) | Troubleshooting procedures | `TROUBLESHOOTING_KB` | Your documentation system |
+| **HR/Scheduling** | Technician roster, skills, coverage | `TECHNICIANS` | Your workforce system |
+| **Device Management API** | Remote commands (reboot, restart) | `SEND_DEVICE_COMMAND` procedure | Your device API |
+| **Alerting** (Slack, PagerDuty) | Notifications, escalations | `SEND_ALERT` procedure | Your notification system |
+
+---
+
+## 👔 PatientPoint Attendee Mapping: Who Cares About What
+
+| Attendee | Role | Primary Questions They Care About | Key Metrics | Prompts to Highlight |
+|----------|------|-----------------------------------|-------------|---------------------|
+| **Mike Walsh** | COO | "What's the operational impact? ROI?" | $96M savings, 52% cost reduction | Q1, Q3, Q4 |
+| **Patrick Arnold** | CTO | "Does this scale? Architecture?" | 500K devices, governance, Snowflake native | Q1, Q9 (automated action) |
+| **Sharon Patent** | CADO | "Data strategy? Governance?" | Data lineage, audit trail, RBAC | All (emphasize auditability) |
+| **Jonathan Richman** | SVP Software & Engineering | "Integration complexity? Build effort?" | Source systems, APIs, implementation | Q9, Architecture diagram |
+| **Liberty Holt** | VP Data & Analytics | "Is the data trustworthy? Models accurate?" | Prediction accuracy, SQL verification | Q1, Q8 (prediction accuracy) |
+| **Jennifer Kelly** | Sr Director Data Engineering | "How do we build the pipelines?" | Ingestion methods, data hygiene | All (emphasize data sources) |
+| **JT Grant** | VP Ad Tech | "How does this protect ad revenue?" | Revenue impact, uptime %, CPM data | Q2 (revenue loss) |
+| **Drew Amwoza** | SVP Technology, Architecture & Strategy | "Strategic fit? Long-term vision?" | Cortex ML roadmap, scalability | Q8, Q9, closing |
+| **Chloé Varennes** | Director Product Management, AdTech | "User experience? Product integration?" | Natural language, response quality | All prompts |
+
+### 🎯 Engagement Strategy by Attendee
+
+**For Mike Walsh (COO):**
+> *"Mike, this next answer shows the annual cost baseline and savings projection—the headline number for your board."*
+
+**For Patrick Arnold (CTO):**
+> *"Patrick, notice this runs entirely within Snowflake—no external ML infrastructure to manage, same governance model you already have."*
+
+**For Sharon Patent (CADO):**
+> *"Sharon, every answer is auditable. I can show you the SQL the AI generated—complete lineage from question to data."*
+
+**For Jonathan Richman (SVP Engineering):**
+> *"Jonathan, the integration architecture uses Snowflake External Functions for API calls—no middleware required."*
+
+**For Liberty Holt (VP Data & Analytics):**
+> *"Liberty, let me verify this answer—here's the underlying SQL you'd use to validate the result."*
+
+**For Jennifer Kelly (Sr Director Data Engineering):**
+> *"Jennifer, this telemetry would come from your IoT platform via Snowpipe or Kafka. What does your current pipeline look like?"*
+
+**For JT Grant (VP Ad Tech):**
+> *"JT, this revenue calculation uses the CPM data from your ad platform. We'd connect to GAM or your direct contracts."*
+
+**For Drew Amwoza (SVP Strategy):**
+> *"Drew, the vision here is Cortex ML for predictions + Cortex Agents for orchestration—all native to Snowflake."*
+
+**For Chloé Varennes (Director PM AdTech):**
+> *"Chloé, notice how natural the interaction is—no SQL, no dashboard switching. How would this fit your product roadmap?"*
+
+---
+
+## 🏗️ Implementation Mindset: Data Acquisition, Governance, Hygiene
+
+> **Use these talking points throughout the demo to frame the "how would we do this" conversation:**
+
+### Data Acquisition
+| Question to Ask PatientPoint | Why It Matters |
+|------------------------------|----------------|
+| "Where does your device telemetry live today?" | Determines ingestion method (Snowpipe, Kafka, batch) |
+| "How frequently is data collected?" | Affects prediction accuracy and cost |
+| "Who owns the ad revenue data?" | May require cross-team coordination |
+
+### Data Governance
+| Question to Ask PatientPoint | Why It Matters |
+|------------------------------|----------------|
+| "Who should have access to revenue data?" | RBAC configuration |
+| "Are there HIPAA considerations?" | Data masking, row-level security |
+| "What audit requirements exist?" | Logging, compliance reporting |
+
+### Data Hygiene
+| Question to Ask PatientPoint | Why It Matters |
+|------------------------------|----------------|
+| "How complete is your device inventory?" | Missing devices = blind spots |
+| "Are telemetry values consistent across device types?" | May need normalization |
+| "How often are work orders updated in ServiceNow?" | Stale data affects insights |
+
+---
+
 ## 📋 Demo Overview
 
 This demo tells a **cohesive story** through 4 personas, with each question flowing naturally to the next:
@@ -26,6 +115,34 @@ This demo tells a **cohesive story** through 4 personas, with each question flow
 | 🖥️ **Operations Center** | Fleet monitoring, predictions, dispatch | 6 min |
 | 🔧 **Field Technician** | Work orders, troubleshooting, repair guidance | 4 min |
 | 🤖 **AI Agent Demo** | Natural language, conversational AI | 4 min |
+
+---
+
+## 🔑 Rehearsed Questions Checklist
+
+> **These are the core questions we validated. Each one is designed to demonstrate a specific business outcome.**
+
+| # | Question | Business Outcome | PatientPoint Attendees Who Care |
+|---|----------|------------------|--------------------------------|
+| **Q1** | "Give me a summary of our device fleet health and business impact" | Single pane of glass | Mike Walsh (COO), Patrick Arnold (CTO), Liberty Holt |
+| **Q2** | "How much advertising revenue are we losing from device downtime?" | Revenue protection | Mike Walsh (COO), JT Grant (VP Ad Tech), Chloé Varennes |
+| **Q3** | "What's our annual field service cost and projected savings?" | ROI justification | Mike Walsh (COO), Patrick Arnold (CTO), Drew Amwoza |
+| **Q4** | "How much have we saved this month from remote fixes?" | Proof of value | Mike Walsh (COO), Jonathan Richman, Liberty Holt |
+| **Q5** | "What is our customer satisfaction score?" | Retention risk | Mike Walsh (COO), Chloé Varennes |
+| **Q6** | "Which devices have critical or high risk levels?" | Actionable intelligence | Jonathan Richman, Jennifer Kelly |
+| **Q7** | "Can any of these be fixed remotely?" | Cost optimization | Jonathan Richman, Jennifer Kelly |
+| **Q8** | "Which devices are predicted to fail in 48 hours?" | Proactive maintenance | Drew Amwoza, Liberty Holt, Patrick Arnold |
+| **Q9** | "Attempt a remote restart on device DEV-003" | Closed-loop operations | Patrick Arnold (CTO), Sharon Patent (CADO), Drew Amwoza |
+
+### 📊 Expected Results from Rehearsal
+
+| Question | Key Numbers to Expect | Watch Out For |
+|----------|----------------------|---------------|
+| **Q1** | Health: 71/100, 92 online, 5 degraded, 3 offline, 94.5% uptime | 67% MEDIUM risk is normal |
+| **Q2** | ~$51K revenue at risk, 8 devices affected, Cleveland pattern | Explain historical vs current |
+| **Q3** | $185M annual cost, $96M savings, 52% reduction, 4:1 ROI | Validate $185/dispatch assumption |
+| **Q4** | $1,200-1,500 saved this month, 60-70% remote rate | Monthly data may vary |
+| **Q9** | Action logged with timestamp, device ID, command | Show audit trail after |
 
 ---
 
@@ -58,16 +175,34 @@ This demo tells a **cohesive story** through 4 personas, with each question flow
 
 ---
 
-### 📌 Prompt 1: The Big Picture
+### 📌 Q1: Fleet Health & Business Impact Summary ⭐ REHEARSED
 
 ```
 Give me a summary of our device fleet health and business impact
 ```
 
-#### 🎯 Why This Matters to the Customer
-- **Executive time is expensive** — They need a single view, not 10 dashboards
-- **Board-ready metrics** — Health score, uptime, revenue impact in one answer
-- **Early warning** — Identify systemic issues before they become crises
+#### 👔 Who In The Room Cares
+| PatientPoint Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Mike Walsh (COO)** | "How healthy is my fleet? What needs attention?" |
+| **Patrick Arnold (CTO)** | "Can I get this insight without custom dashboards?" |
+| **Liberty Holt (VP Data & Analytics)** | "Is this data accurate? Can I verify it?" |
+| **Sharon Patent (CADO)** | "What's the data lineage? Is this auditable?" |
+
+#### 🎯 WHY This Matters (Business Outcomes)
+| Business Outcome | How This Prompt Demonstrates It |
+|------------------|--------------------------------|
+| **10x Faster Insights** | Instant answer vs. waiting for weekly report |
+| **Reduced Downtime** | Proactive visibility into at-risk devices |
+| **Executive Decision Support** | Board-ready metrics in natural language |
+
+#### 📡 Source Systems Simulated
+| Demo Data | Production Source | Integration Method |
+|-----------|-------------------|-------------------|
+| `DEVICE_INVENTORY` | IoT Platform (AWS IoT, Azure IoT) | Snowpipe or Kafka |
+| `DEVICE_TELEMETRY` | Device heartbeat stream | Real-time ingestion |
+| `V_REVENUE_IMPACT` | Ad Platform (GAM) | Daily batch or API |
+| `PROVIDER_FEEDBACK` | Qualtrics/Salesforce | Scheduled sync |
 
 #### 📊 Business Outcomes Demonstrated
 | Outcome | What We're Proving |
@@ -106,6 +241,13 @@ SELECT RISK_LEVEL, COUNT(*) FROM V_DEVICE_HEALTH_SUMMARY GROUP BY RISK_LEVEL;
 | **Risk thresholds** (CRITICAL >75°C, etc.) | Your **operational thresholds** based on historical failure data | Update risk classification logic |
 | **Hourly telemetry** | Your **actual telemetry frequency** (could be 5-min, 15-min) | Adjust data ingestion pipeline |
 
+#### 🏗️ PatientPoint Implementation Conversation Starters
+
+> **ASK THE CUSTOMER:**
+> - "Where does your device telemetry come from today? AWS IoT? Azure? Custom platform?"
+> - "What health metrics do you currently track? CPU, memory, temperature—anything else?"
+> - "What would your thresholds be for 'critical' vs 'high' risk?"
+
 **SAY THIS:**
 > *"This demo uses 100 representative devices. In production, this same query scales to your 500,000 devices—Snowflake handles the compute. The health score formula and risk thresholds are fully configurable based on your historical failure patterns."*
 
@@ -133,16 +275,35 @@ SELECT RISK_LEVEL, COUNT(*) FROM V_DEVICE_HEALTH_SUMMARY GROUP BY RISK_LEVEL;
 
 ---
 
-### 📌 Prompt 2: Revenue Protection
+### 📌 Q2: Revenue Loss from Device Downtime ⭐ REHEARSED
 
 ```
 How much advertising revenue are we losing from device downtime?
 ```
 
-#### 🎯 Why This Matters to the Customer
-- **Revenue is the language of the C-suite** — This connects IT metrics to business outcomes
-- **Pharma partners expect uptime** — Contractual SLAs may be at risk
-- **Quantifies the cost of inaction** — Makes the case for predictive maintenance investment
+#### 👔 Who In The Room Cares
+| PatientPoint Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Mike Walsh (COO)** | "What's the dollar impact of device issues?" |
+| **JT Grant (VP Ad Tech)** | "Are we meeting pharma partner SLAs?" |
+| **Chloé Varennes (Director PM AdTech)** | "How does this connect to our ad platform?" |
+| **Liberty Holt (VP Data & Analytics)** | "How is revenue per device calculated?" |
+
+#### 🎯 WHY This Matters (Business Outcomes)
+| Business Outcome | How This Prompt Demonstrates It |
+|------------------|--------------------------------|
+| **Revenue Protection** | Quantify exactly how much downtime costs |
+| **Partner SLA Compliance** | Prove ad delivery reliability to pharma |
+| **Investment Justification** | "We're losing $X, here's how to fix it" |
+
+> **KEY INSIGHT FOR CFO:** *"Every hour a device is offline, we lose $8-$25 in ad revenue. At 500K devices, even 0.5% downtime = $25M+ annual impact."*
+
+#### 📡 Source Systems Simulated
+| Demo Data | Production Source | Integration Method |
+|-----------|-------------------|-------------------|
+| `HOURLY_AD_REVENUE_USD` | Google Ad Manager CPM data | Daily API sync |
+| `DEVICE_DOWNTIME` | Monitoring/alerting system | Event-driven ingestion |
+| `DEVICE_INVENTORY.STATUS` | IoT Platform device status | Real-time stream |
 
 #### 📊 Business Outcomes Demonstrated
 | Outcome | What We're Proving |
@@ -209,16 +370,36 @@ SELECT * FROM DEVICE_DOWNTIME ORDER BY DOWNTIME_START DESC;
 
 ---
 
-### 📌 Prompt 3: ROI & Cost Baseline
+### 📌 Q3: Annual Field Service Cost & ROI ⭐ REHEARSED
 
 ```
 What's our annual field service cost and projected savings with predictive maintenance?
 ```
 
-#### 🎯 Why This Matters to the Customer
-- **CFO question #1** — "What does this cost and what do we save?"
-- **Investment justification** — Hard numbers for budget approval
-- **Benchmark against industry** — $185/dispatch is industry standard
+#### 👔 Who In The Room Cares
+| PatientPoint Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Mike Walsh (COO)** | "What's the bottom-line impact? Justify the investment." |
+| **Patrick Arnold (CTO)** | "What's the ROI timeline? Is this worth the build?" |
+| **Drew Amwoza (SVP Strategy)** | "How does this fit our technology roadmap?" |
+| **Jonathan Richman (SVP Engineering)** | "What's the implementation effort vs. payback?" |
+
+#### 🎯 WHY This Matters (Business Outcomes)
+| Business Outcome | How This Prompt Demonstrates It |
+|------------------|--------------------------------|
+| **Investment Justification** | $96M savings justifies implementation cost |
+| **Operational Efficiency** | 52% reduction in field service costs |
+| **ROI Timeline** | 4:1 return, typically payback in <1 year |
+
+> **KEY INSIGHT FOR CFO:** *"This is your headline number: $96 million in annual savings from 52% reduction in field dispatches. Conservative estimate—doesn't include revenue protection."*
+
+#### 📡 Source Systems Simulated
+| Demo Data | Production Source | Integration Method |
+|-----------|-------------------|-------------------|
+| `V_ROI_ANALYSIS` | Calculated from ServiceNow costs | SQL aggregation |
+| `$185/dispatch` | Actual dispatch costs (labor, travel, parts) | From field service system |
+| `$25/remote fix` | Helpdesk/NOC labor costs | From support ticketing |
+| `MAINTENANCE_HISTORY` | ServiceNow closed tickets | Native app or API |
 
 #### 📊 Business Outcomes Demonstrated
 | Outcome | What We're Proving |
@@ -262,6 +443,17 @@ GROUP BY RESOLUTION_TYPE;
 - **Parts costs**: Average parts per dispatch
 - **Remote costs**: NOC hourly rate × avg resolution time
 
+#### 🏗️ PatientPoint Implementation Conversation Starters
+
+> **ASK THE CUSTOMER:**
+> - "What's your actual cost per field dispatch? (We're using $185 as industry average)"
+> - "What does a remote fix cost in labor time?"
+> - "How many issues per device per year do you see today?"
+
+> **DATA HYGIENE CHECK:**
+> - "Do you track resolution type (remote vs dispatch) in ServiceNow?"
+> - "Are costs captured at the ticket level or estimated?"
+
 **SAY THIS (if asked about the numbers):**
 > *"These cost assumptions are configurable. In a POC, we'd plug in your actual dispatch costs from ServiceNow and your remote support costs from your helpdesk system. The ROI calculation updates automatically."*
 
@@ -297,16 +489,34 @@ GROUP BY RESOLUTION_TYPE;
 
 ---
 
-### 📌 Prompt 4: Cost Savings Achieved
+### 📌 Q4: Monthly Cost Savings Achieved ⭐ REHEARSED
 
 ```
 How much money have we saved this month from remote fixes vs field dispatches?
 ```
 
-#### 🎯 Why This Matters to the Customer
-- **Proof over promise** — Not projections, actual realized savings
-- **Trend visibility** — Is the program working month-over-month?
-- **Operational validation** — Remote fix strategy is paying off
+#### 👔 Who In The Room Cares
+| PatientPoint Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Mike Walsh (COO)** | "Proof that this works—actual savings, not projections" |
+| **Jonathan Richman (SVP Engineering)** | "Is the remote fix capability delivering?" |
+| **Liberty Holt (VP Data & Analytics)** | "Can we track this trend over time?" |
+
+#### 🎯 WHY This Matters (Business Outcomes)
+| Business Outcome | How This Prompt Demonstrates It |
+|------------------|--------------------------------|
+| **Proof Over Promise** | Actual dollars saved, not projections |
+| **Trend Visibility** | Monthly tracking validates strategy |
+| **Operational Accountability** | Clear attribution: remote fix → savings |
+
+> **KEY INSIGHT FOR MIKE (COO):** *"This is the proof point—we're not just projecting savings, we're tracking actual realized savings month over month. This is how you'd measure success post-implementation."*
+
+#### 📡 Source Systems Simulated
+| Demo Data | Production Source | Integration Method |
+|-----------|-------------------|-------------------|
+| `MAINTENANCE_HISTORY` | ServiceNow closed tickets | Native app sync |
+| `RESOLUTION_TYPE` | Ticket classification field | Map from your categories |
+| `COST_USD` | Actual or estimated cost per ticket | From field service costing |
 
 #### 📊 Business Outcomes Demonstrated
 | Outcome | What We're Proving |
@@ -330,6 +540,16 @@ FROM V_MAINTENANCE_ANALYTICS
 WHERE DATE_TRUNC('month', CREATED_AT) = DATE_TRUNC('month', CURRENT_DATE())
 ORDER BY CREATED_AT DESC;
 ```
+
+#### 🏗️ PatientPoint Implementation Conversation Starters
+
+> **ASK JENNIFER (Data Engineering):**
+> - "Do you track resolution type (remote vs dispatch) in ServiceNow today?"
+> - "Are costs captured at the ticket level, or would we need to calculate from averages?"
+
+> **DATA HYGIENE CHECK:**
+> - "How consistently is resolution type populated in your tickets?"
+> - "Do you have a standard taxonomy for issue types?"
 
 #### 🔄 Transition
 > *"That's real savings happening now—on track for 40-60% reduction in field service costs. But I noticed we track NPS. Let's check customer satisfaction..."*
@@ -812,16 +1032,38 @@ GROUP BY RESOLUTION_TYPE;
 
 ---
 
-### 📌 Prompt 9: Automated Action ⭐ KEY MOMENT
+### 📌 Q9: Automated Remediation ⭐ REHEARSED ⭐ KEY MOMENT
 
 ```
 Can you attempt a remote restart on device DEV-003 to fix the high CPU issue?
 ```
 
-#### 🎯 Why This Matters to the Customer
-- **Close the loop** — AI doesn't just recommend, it acts
-- **Speed** — No human delay between diagnosis and fix
-- **Scalability** — Automated fixes across 500K devices
+#### 👔 Who In The Room Cares
+| PatientPoint Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Patrick Arnold (CTO)** | "This is agentic AI—it can take action, not just answer questions" |
+| **Jonathan Richman (SVP Engineering)** | "How does this integrate with our device API?" |
+| **Drew Amwoza (SVP Strategy)** | "This is the future—closed-loop autonomous operations" |
+| **Sharon Patent (CADO)** | "Is this auditable? What controls exist?" |
+
+#### 🎯 WHY This Matters (Business Outcomes)
+| Business Outcome | How This Prompt Demonstrates It |
+|------------------|--------------------------------|
+| **Closed-Loop Operations** | AI doesn't just recommend—it acts |
+| **Speed to Resolution** | No human delay between diagnosis and fix |
+| **Scalability** | Automated fixes across 500K devices |
+| **Governance** | Every action logged for audit |
+
+> **KEY INSIGHT FOR PATRICK (CTO):** *"This is the difference between a chatbot and an AI agent. It's not just answering questions—it's taking action. Same RBAC, same audit trail, same governance you already have."*
+
+> **KEY INSIGHT FOR SHARON (CADO):** *"Every action is logged with timestamp, who initiated it, what command was sent, and the outcome. Complete audit trail for compliance."*
+
+#### 📡 Source Systems Simulated
+| Demo Data | Production Source | Integration Method |
+|-----------|-------------------|-------------------|
+| `SEND_DEVICE_COMMAND` procedure | Device Management API | External Function (HTTPS) |
+| `EXTERNAL_ACTION_LOG` | Audit/compliance system | Write to Splunk/Datadog optional |
+| Device API | Your IoT platform SDK | REST API calls |
 
 #### 📊 Business Outcomes Demonstrated
 | Outcome | What We're Proving |
@@ -886,6 +1128,21 @@ ORDER BY TIMESTAMP DESC;
 │  (Snowflake)    │
 └─────────────────┘
 ```
+
+#### 🏗️ PatientPoint Implementation Conversation Starters
+
+> **ASK JONATHAN (SVP Engineering):**
+> - "What's your device management platform? AWS IoT? Azure? Custom?"
+> - "Do you have an API for sending commands to devices (reboot, restart)?"
+> - "What's your current process for triggering remote fixes?"
+
+> **ASK DREW (SVP Strategy):**
+> - "How does this fit with your automation roadmap?"
+> - "Are there other actions beyond device commands you'd want to automate?"
+
+> **GOVERNANCE CHECK FOR SHARON (CADO):**
+> - "What approval workflow would you want before automated actions?"
+> - "Who should have permission to trigger device commands via AI?"
 
 **SAY THIS:**
 > *"In production, the stored procedure would be replaced with an External Function that calls your device management API. Snowflake External Functions provide secure, governed API access—same RBAC, same audit trail. We can integrate with ServiceNow, Slack, PagerDuty, or any REST API."*
@@ -1193,8 +1450,37 @@ What training data do we have available for building ML models?
 > 
 > All running natively in Snowflake—Cortex for AI, full governance through your existing security model, complete audit trail."
 
+### 🎯 Closing Remarks by Attendee Interest
+
+**For Mike Walsh (COO):**
+> *"Mike, the bottom line: $96M in projected annual savings from a 52% reduction in field dispatches. This is ROI you can take to the board."*
+
+**For Patrick Arnold (CTO):**
+> *"Patrick, this runs entirely in Snowflake—no external ML infrastructure, same governance model, same security perimeter. Cortex Agents are the orchestration layer."*
+
+**For Sharon Patent (CADO):**
+> *"Sharon, every answer is auditable, every action is logged. The data lineage is complete from question to source table."*
+
+**For JT Grant (VP Ad Tech):**
+> *"JT, we can connect directly to your ad platform to calculate actual revenue impact per device. Pharma partners see real uptime metrics."*
+
+**For Drew Amwoza (SVP Strategy):**
+> *"Drew, the roadmap here is Cortex ML for predictions, Cortex Agents for orchestration, and eventually autonomous operations. All native to Snowflake."*
+
+**For Jennifer Kelly (Sr Director Data Engineering):**
+> *"Jennifer, the data pipelines use Snowpipe for streaming, or batch ingestion—whatever fits your current architecture. We'd map to your existing schemas."*
+
 ### Call to Action
 > "Would you like to see how this could work with your data? We can set up a proof-of-concept with your actual device telemetry in days, not months."
+
+### 🤔 Discovery Questions for PatientPoint
+
+> **Before we wrap, I'd love to understand:**
+> 1. "What does your device telemetry pipeline look like today?" *(Jennifer)*
+> 2. "What's your current dispatch cost per incident?" *(Mike/Jonathan)*
+> 3. "Do you track revenue impact per device from your ad platform?" *(JT)*
+> 4. "What governance requirements would apply to automated actions?" *(Sharon)*
+> 5. "Where do you see the biggest gap in the architecture I showed?" *(Drew/Patrick)*
 
 ---
 
@@ -1257,6 +1543,24 @@ If asked about security, governance, or compliance:
 ---
 
 ## 🗺️ PatientPoint Implementation Roadmap
+
+### Phase 0: Discovery (Week 0) — Questions to Answer
+
+| Area | Questions for PatientPoint | Who to Ask |
+|------|---------------------------|------------|
+| **Data Acquisition** | Where is device telemetry stored today? What format? | Jennifer Kelly |
+| **Data Acquisition** | How frequently is telemetry captured? (5-min, hourly?) | Jennifer Kelly |
+| **Data Acquisition** | What's the pipeline from IoT platform to warehouse? | Jennifer Kelly |
+| **Data Governance** | Who owns device data? Ad revenue data? | Sharon Patent |
+| **Data Governance** | What RBAC model applies? HIPAA considerations? | Sharon Patent |
+| **Data Governance** | What audit requirements exist? | Sharon Patent |
+| **Data Hygiene** | How complete is device inventory? Missing devices? | Liberty Holt |
+| **Data Hygiene** | Are telemetry values consistent across device types? | Liberty Holt |
+| **Data Hygiene** | How current is ServiceNow data? Lag? | Jonathan Richman |
+| **Integration** | What's the device management API? Can we send commands? | Jonathan Richman |
+| **Integration** | What ticketing system? ServiceNow? | Jonathan Richman |
+| **Business** | What's actual dispatch cost? (We used $185) | Mike Walsh |
+| **Business** | What's the remote fix rate today? | Mike Walsh |
 
 ### Phase 1: Data Foundation (Week 1-2)
 
