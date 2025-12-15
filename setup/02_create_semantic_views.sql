@@ -570,3 +570,79 @@ CREATE OR REPLACE SEMANTIC VIEW SV_EXTERNAL_ACTIONS
 
 GRANT SELECT ON SEMANTIC VIEW SV_EXTERNAL_ACTIONS TO ROLE SF_INTELLIGENCE_DEMO;
 
+-- ============================================================================
+-- CURRENT DOWNTIME SEMANTIC VIEW
+-- Shows devices currently offline with active revenue loss
+-- This answers "How long have these devices been down and what's the cost?"
+-- ============================================================================
+
+CREATE OR REPLACE SEMANTIC VIEW SV_CURRENT_DOWNTIME
+  TABLES (
+    downtime AS V_CURRENT_DOWNTIME_IMPACT PRIMARY KEY (DEVICE_ID)
+  )
+  DIMENSIONS (
+    downtime.device_id AS downtime.DEVICE_ID
+      WITH SYNONYMS = ('device', 'screen', 'unit')
+      COMMENT = 'Device ID currently experiencing downtime',
+    
+    downtime.facility_name AS downtime.FACILITY_NAME
+      WITH SYNONYMS = ('facility', 'location', 'site', 'customer')
+      COMMENT = 'Facility where the offline device is located',
+    
+    downtime.facility_type AS downtime.FACILITY_TYPE
+      WITH SYNONYMS = ('type', 'category')
+      COMMENT = 'Type of healthcare facility',
+    
+    downtime.location AS downtime.LOCATION
+      WITH SYNONYMS = ('city', 'state', 'address')
+      COMMENT = 'City and state of the facility',
+    
+    downtime.device_model AS downtime.DEVICE_MODEL
+      WITH SYNONYMS = ('model', 'screen type')
+      COMMENT = 'Model of the device',
+    
+    downtime.cause AS downtime.CAUSE
+      WITH SYNONYMS = ('reason', 'issue', 'problem', 'root cause')
+      COMMENT = 'Cause of the downtime (NETWORK_OUTAGE, HARDWARE_FAILURE, etc.)',
+    
+    downtime.ticket_id AS downtime.TICKET_ID
+      WITH SYNONYMS = ('ticket', 'incident', 'case')
+      COMMENT = 'Associated ticket or incident number',
+    
+    downtime.priority AS downtime.PRIORITY
+      WITH SYNONYMS = ('urgency', 'severity')
+      COMMENT = 'Priority level of the incident',
+    
+    downtime.estimated_resolution AS downtime.ESTIMATED_RESOLUTION
+      WITH SYNONYMS = ('eta', 'expected fix', 'resolution plan')
+      COMMENT = 'Estimated time or plan for resolution',
+    
+    downtime.downtime_start AS downtime.DOWNTIME_START
+      WITH SYNONYMS = ('started', 'went down', 'offline since')
+      COMMENT = 'When the device went offline'
+  )
+  METRICS (
+    downtime.hours_offline AS SUM(downtime.HOURS_OFFLINE)
+      WITH SYNONYMS = ('hours down', 'downtime hours', 'time offline', 'how long offline')
+      COMMENT = 'Number of hours the device has been offline',
+    
+    downtime.revenue_lost AS SUM(downtime.REVENUE_LOST_SO_FAR)
+      WITH SYNONYMS = ('revenue loss', 'money lost', 'cost', 'dollars lost', 'revenue impact')
+      COMMENT = 'Revenue lost so far from this device being offline',
+    
+    downtime.impressions_lost AS SUM(downtime.IMPRESSIONS_LOST_SO_FAR)
+      WITH SYNONYMS = ('lost impressions', 'missed ads', 'ad impressions lost')
+      COMMENT = 'Ad impressions lost so far',
+    
+    downtime.daily_burn_rate AS SUM(downtime.DAILY_REVENUE_LOSS_RATE)
+      WITH SYNONYMS = ('daily cost', 'daily loss', 'burn rate', 'daily revenue loss')
+      COMMENT = 'Revenue being lost per day from this device',
+    
+    downtime.hourly_rate AS SUM(downtime.HOURLY_AD_REVENUE_USD)
+      WITH SYNONYMS = ('hourly revenue', 'revenue per hour')
+      COMMENT = 'Hourly ad revenue rate for this device'
+  )
+  COMMENT = 'Current active downtime for offline devices. Shows how long devices have been down and the revenue being lost RIGHT NOW. Use this to answer questions about current offline devices and their business impact.';
+
+GRANT SELECT ON SEMANTIC VIEW SV_CURRENT_DOWNTIME TO ROLE SF_INTELLIGENCE_DEMO;
+

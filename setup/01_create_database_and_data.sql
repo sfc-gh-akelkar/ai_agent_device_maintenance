@@ -471,6 +471,62 @@ UNION ALL
 SELECT 'DEV-003', DATEADD('hour', 14, DATEADD('day', -27, CURRENT_TIMESTAMP())), DATEADD('hour', 15, DATEADD('day', -27, CURRENT_TIMESTAMP())), 1.5, 'SOFTWARE_ISSUE', NULL, 18.75, 30;
 
 -- ============================================================================
+-- ACTIVE DOWNTIME TABLE
+-- Tracks devices currently experiencing downtime (ongoing incidents)
+-- These are the 3 OFFLINE devices with active/open incidents
+-- ============================================================================
+CREATE OR REPLACE TABLE ACTIVE_DOWNTIME (
+    INCIDENT_ID VARCHAR(36) DEFAULT UUID_STRING() PRIMARY KEY,
+    DEVICE_ID VARCHAR(20),
+    DOWNTIME_START TIMESTAMP_NTZ,
+    CAUSE VARCHAR(50),
+    TICKET_ID VARCHAR(20),
+    ESTIMATED_RESOLUTION VARCHAR(100),
+    PRIORITY VARCHAR(20),
+    CONSTRAINT fk_active_downtime FOREIGN KEY (DEVICE_ID) REFERENCES DEVICE_INVENTORY(DEVICE_ID)
+);
+
+-- Insert active downtime for the 3 OFFLINE devices
+-- These show devices that went down recently and haven't been fixed yet
+INSERT INTO ACTIVE_DOWNTIME (DEVICE_ID, DOWNTIME_START, CAUSE, TICKET_ID, ESTIMATED_RESOLUTION, PRIORITY)
+VALUES 
+    -- DEV-025: Offline for ~18 hours (network issue discovered this morning)
+    ('DEV-025', DATEADD('hour', -18, CURRENT_TIMESTAMP()), 'NETWORK_OUTAGE', 'TKT-025', 'Awaiting network team investigation', 'CRITICAL'),
+    -- DEV-031: Offline for ~36 hours (hardware failure, parts on order)
+    ('DEV-031', DATEADD('hour', -36, CURRENT_TIMESTAMP()), 'HARDWARE_FAILURE', 'TKT-031', 'Replacement display shipped, ETA 2 days', 'CRITICAL'),
+    -- DEV-081: Offline for ~72 hours (complex issue, escalated)
+    ('DEV-081', DATEADD('hour', -72, CURRENT_TIMESTAMP()), 'HARDWARE_FAILURE', 'TKT-081', 'Escalated to engineering - motherboard replacement', 'CRITICAL');
+
+-- ============================================================================
+-- VIEW: CURRENT DOWNTIME IMPACT
+-- Shows revenue being lost RIGHT NOW from offline devices
+-- ============================================================================
+CREATE OR REPLACE VIEW V_CURRENT_DOWNTIME_IMPACT AS
+SELECT 
+    ad.DEVICE_ID,
+    d.FACILITY_NAME,
+    d.FACILITY_TYPE,
+    CONCAT(d.LOCATION_CITY, ', ', d.LOCATION_STATE) as LOCATION,
+    d.DEVICE_MODEL,
+    d.HOURLY_AD_REVENUE_USD,
+    ad.DOWNTIME_START,
+    ad.CAUSE,
+    ad.TICKET_ID,
+    ad.PRIORITY,
+    ad.ESTIMATED_RESOLUTION,
+    -- Calculate hours offline
+    ROUND(DATEDIFF('minute', ad.DOWNTIME_START, CURRENT_TIMESTAMP()) / 60.0, 1) as HOURS_OFFLINE,
+    -- Calculate revenue lost so far
+    ROUND(d.HOURLY_AD_REVENUE_USD * DATEDIFF('minute', ad.DOWNTIME_START, CURRENT_TIMESTAMP()) / 60.0, 2) as REVENUE_LOST_SO_FAR,
+    -- Calculate impressions lost (estimate based on hourly rate)
+    ROUND(d.MONTHLY_IMPRESSIONS / 720.0 * DATEDIFF('minute', ad.DOWNTIME_START, CURRENT_TIMESTAMP()) / 60.0) as IMPRESSIONS_LOST_SO_FAR,
+    -- Daily burn rate
+    ROUND(d.HOURLY_AD_REVENUE_USD * 24, 2) as DAILY_REVENUE_LOSS_RATE
+FROM ACTIVE_DOWNTIME ad
+JOIN DEVICE_INVENTORY d ON ad.DEVICE_ID = d.DEVICE_ID
+WHERE d.STATUS = 'OFFLINE';
+
+-- ============================================================================
 -- PROVIDER FEEDBACK TABLE
 -- Customer satisfaction tracking from healthcare providers
 -- ============================================================================

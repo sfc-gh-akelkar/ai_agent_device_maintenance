@@ -197,6 +197,8 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
         answer: "I'll use BusinessImpactAnalytics to retrieve the Net Promoter Score and satisfaction metrics."
       - question: "What's our annual field service cost and projected savings?"
         answer: "I'll use ROIAnalytics to show the cost baseline ($185M at scale) and projected savings (~$96M annually from 60% remote fixes)."
+      - question: "How long have the offline devices been down and what's the revenue impact?"
+        answer: "I'll use CurrentDowntimeAnalytics to show hours offline, revenue lost so far, and daily burn rate for each offline device."
       - question: "How many open work orders do we have?"
         answer: "I'll query OperationsAnalytics for active work orders with priority breakdown."
       - question: "Can you restart services on device DEV-003?"
@@ -304,6 +306,32 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
           When NOT to Use:
           - Do NOT use for current month savings (use MaintenanceAnalytics)
           - Do NOT use for individual ticket costs (use MaintenanceAnalytics)
+
+    - tool_spec:
+        type: "cortex_analyst_text_to_sql"
+        name: "CurrentDowntimeAnalytics"
+        description: |
+          Analyzes CURRENTLY OFFLINE devices and their active revenue loss.
+          Shows how long devices have been down and the business impact RIGHT NOW.
+          
+          Data Coverage:
+          - Devices currently experiencing downtime (OFFLINE status)
+          - Hours offline for each device
+          - Revenue lost so far (calculated in real-time)
+          - Impressions lost
+          - Daily burn rate (revenue loss per day)
+          - Cause, ticket ID, and estimated resolution
+          
+          When to Use:
+          - "How long have the offline devices been down?"
+          - "What revenue are we losing RIGHT NOW?"
+          - "Show me current active downtime"
+          - "Which devices need urgent attention and why?"
+          - "What's the cost of the current outages?"
+          
+          When NOT to Use:
+          - Do NOT use for historical downtime (use BusinessImpactAnalytics)
+          - Do NOT use for projected/annual costs (use ROIAnalytics)
 
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
@@ -510,6 +538,8 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
       semantic_view: "PATIENTPOINT_MAINTENANCE.DEVICE_OPS.SV_MAINTENANCE_ANALYTICS"
     BusinessImpactAnalytics:
       semantic_view: "PATIENTPOINT_MAINTENANCE.DEVICE_OPS.SV_BUSINESS_IMPACT"
+    CurrentDowntimeAnalytics:
+      semantic_view: "PATIENTPOINT_MAINTENANCE.DEVICE_OPS.SV_CURRENT_DOWNTIME"
     ROIAnalytics:
       semantic_view: "PATIENTPOINT_MAINTENANCE.DEVICE_OPS.SV_ROI_ANALYSIS"
     OperationsAnalytics:
