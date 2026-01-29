@@ -348,43 +348,12 @@ SELECT
 FROM V_PREDICTED_FAILURE_IMPACT;
 
 -- ============================================================================
--- 5. CREATE SEMANTIC VIEW FOR TRIAGE (Agent Integration)
+-- 5. GRANT PERMISSIONS ON VIEWS
+-- Note: SV_DEVICE_TRIAGE has been consolidated into SV_DEVICE_ANALYTICS
+-- (see 02_create_semantic_views.sql for the unified semantic views)
 -- ============================================================================
 
-CREATE OR REPLACE SEMANTIC VIEW SV_DEVICE_TRIAGE
-  COMMENT = 'Device triage analysis: Which devices can be fixed remotely vs need dispatch. Use for prioritizing maintenance actions.'
-  TABLES (
-    triage AS V_DEVICE_TRIAGE PRIMARY KEY (DEVICE_ID)
-  )
-  RELATIONSHIPS ()
-  DIMENSIONS (
-    triage.DEVICE_ID AS triage.device_id
-      LABEL 'Device ID',
-    triage.TRIAGE_ACTION AS triage.triage_action
-      LABEL 'Triage Action'
-      DESCRIPTION 'Recommended action: REMOTE_RESTART, WIFI_CREDENTIAL_UPDATE, NEEDS_DISPATCH, MONITOR_ONLY',
-    triage.RISK_LEVEL AS triage.risk_level
-      LABEL 'Risk Level',
-    triage.REMOTE_FIXABLE AS triage.remote_fixable
-      LABEL 'Remote Fixable'
-      DESCRIPTION 'TRUE if device can be fixed without field dispatch'
-  )
-  METRICS (
-    triage.devices_remote_fixable AS COUNT(CASE WHEN triage.REMOTE_FIXABLE THEN 1 END)
-      LABEL 'Remote Fixable Devices'
-      DESCRIPTION 'Count of at-risk devices that can be fixed remotely',
-    triage.devices_need_dispatch AS COUNT(CASE WHEN NOT triage.REMOTE_FIXABLE THEN 1 END)
-      LABEL 'Devices Needing Dispatch',
-    triage.total_resolution_cost AS SUM(triage.ESTIMATED_RESOLUTION_COST)
-      LABEL 'Total Resolution Cost'
-  );
-
--- ============================================================================
--- 6. UPDATE AGENT WITH NEW TOOLS
--- Run this after updating 04_create_agent.sql
--- ============================================================================
-
--- Grant permissions
+-- Grant permissions on base views
 GRANT SELECT ON V_COST_BY_FAILURE_CAUSE TO ROLE SF_INTELLIGENCE_DEMO;
 GRANT SELECT ON V_DEVICE_TRIAGE TO ROLE SF_INTELLIGENCE_DEMO;
 GRANT SELECT ON V_TRIAGE_SUMMARY TO ROLE SF_INTELLIGENCE_DEMO;

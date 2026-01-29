@@ -200,19 +200,31 @@ What's wrong with device DEV-003 and how do I fix it?
 | V_PREDICTED_IMPACT_SUMMARY | Business impact of predicted failures |
 | V_COST_BY_FAILURE_CAUSE | Cost breakdown by failure type |
 
+### Semantic Views (Consolidated Architecture)
+
+Following [Snowflake best practices](https://www.snowflake.com/en/developers/guides/best-practices-to-building-cortex-agents/#semantic-views-data-level), we use **3 consolidated semantic views** with 3-5 tables each:
+
+| Semantic View | Tables Joined | Use Cases |
+|---------------|---------------|-----------|
+| **SV_DEVICE_ANALYTICS** | devices, predictions, last_gasp, downtime | Fleet health, ML predictions, failure classification, active downtime |
+| **SV_MAINTENANCE_OPERATIONS** | work_orders, tickets, technicians, actions | Work orders, tickets, MTTR, technician dispatch, action audit |
+| **SV_BUSINESS_IMPACT** | revenue, satisfaction, roi | Revenue loss, NPS, ROI projections |
+
+> *"Fewer views = LLM chooses correctly more often. Each view uses RELATIONSHIPS for proper joins."*
+
 ### Agent Tools
 
 | Tool | Type | Purpose |
 |------|------|---------|
-| DeviceFleetAnalytics | Cortex Analyst | Device health & telemetry |
-| MaintenanceAnalytics | Cortex Analyst | Ticket history & costs |
-| **LastGaspAnalytics** | **Cortex Analyst** | **Failure classification** |
-| ROIAnalytics | Cortex Analyst | Annual costs & ROI |
+| **DeviceAnalytics** | Cortex Analyst | Device health, predictions, failure classification, downtime |
+| **MaintenanceOperations** | Cortex Analyst | Work orders, tickets, technicians, action audit |
+| **BusinessImpact** | Cortex Analyst | Revenue, satisfaction, ROI |
 | TroubleshootingGuide | Cortex Search | Fix procedures |
 | PastIncidents | Cortex Search | Historical resolutions |
 | SendDeviceCommand | Custom Procedure | Remote device commands |
 | SendAlert | Custom Procedure | Slack/PagerDuty alerts |
 | CreateServiceNowIncident | Custom Procedure | Work order creation |
+| BatchDeviceCommand | Custom Procedure | Bulk device commands |
 
 ---
 

@@ -83,102 +83,88 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
       - In production, these would connect to actual external systems via External Functions
 
     orchestration: |
-      Tool Selection Guidelines:
+      Tool Selection Guidelines (3 Consolidated Semantic Views + Search + Actions):
       
-      - Use "DeviceFleetAnalytics" for device inventory, health scores, and telemetry
-        Examples: "How many devices are online?", "Show devices with low health scores",
-        "What is the average CPU temperature?", "Which devices are at high risk?"
+      PRIMARY ANALYTICS TOOLS:
       
-      - Use "MaintenanceAnalytics" for maintenance history, costs, and resolution metrics
-        Examples: "What is our remote fix rate?", "Total cost savings this month?",
-        "Average resolution time by issue type?", "How many field dispatches?"
+      - Use "DeviceAnalytics" for ALL device-related queries
+        This unified view covers: device health, ML predictions, failure classification, 
+        downtime tracking, and triage recommendations.
+        
+        Examples:
+        - Fleet status: "How many devices are online/offline?"
+        - Health metrics: "Average CPU temperature?", "Devices with low health scores?"
+        - Predictions: "Which devices will fail in 48 hours?", "Show high-risk devices"
+        - Failure classification: "Why did DEV-025 go offline?", "Is this a Wi-Fi password change?"
+        - Downtime: "How long have offline devices been down?", "Current revenue loss?"
+        - Triage: "Can we fix this remotely?", "Which need dispatch?"
       
-      - Use "BusinessImpactAnalytics" for revenue, downtime, and satisfaction metrics
-        Examples: "How much revenue lost to downtime?", "What is our NPS score?",
-        "Which facilities have negative feedback?", "Total impressions lost?"
+      - Use "MaintenanceOperations" for ALL service and operations queries
+        This unified view covers: work orders, maintenance tickets, technician workload,
+        and automated action audit log.
+        
+        Examples:
+        - Work orders: "How many open work orders?", "Critical priority jobs?"
+        - Tickets: "Remote fix rate?", "Average resolution time?", "Cost savings?"
+        - Technicians: "Who is available for dispatch?", "Team workload?"
+        - Actions: "Show recent automated actions", "What commands were triggered?"
       
-      - Use "ROIAnalytics" for annual costs, ROI projections, and executive cost justification
-        Examples: "What's our annual field service cost?", "Projected savings?",
-        "How much can we save with predictive maintenance?", "Cost per dispatch vs remote?"
+      - Use "BusinessImpact" for ALL financial and satisfaction queries
+        This unified view covers: revenue impact, customer satisfaction, NPS,
+        and ROI projections.
+        
+        Examples:
+        - Revenue: "Total revenue lost to downtime?", "Impressions lost?"
+        - Satisfaction: "What is our NPS score?", "Negative feedback?"
+        - ROI: "Annual field service cost?", "Projected savings from remote fixes?"
+        - Executive: "Cost per dispatch vs remote?", "ROI of predictive maintenance?"
       
-      - Use "LastGaspAnalytics" for failure classification and Wi-Fi vs hardware analysis
-        Examples: "Why did this device go offline?", "Is this a Wi-Fi password change?",
-        "How many failures were Wi-Fi related?", "Show failure classification breakdown"
-      
-      - Use "MLPredictions" for ML-powered failure predictions and risk scores
-        Examples: "Which devices will fail in the next 48 hours?", "Show high-risk devices",
-        "How many devices are predicted to fail soon?", "Device failure risk analysis"
-      
-      - Use "DeviceTriageAnalytics" for classifying what can be fixed remotely vs needs dispatch
-        Examples: "Which devices can we fix remotely?", "How many need field dispatch?",
-        "Show triage breakdown for at-risk devices", "Can we prevent these failures automatically?"
-      
-      - Use "FailureCostAnalytics" for cost analysis by failure type
-        Examples: "Which failure type costs most to fix?", "Cost breakdown by failure cause",
-        "Are Wi-Fi issues or hardware failures more expensive?"
-      
-      - Use "PredictedImpactAnalytics" for business impact of predicted failures
-        Examples: "What's the business impact if predicted failures occur?",
-        "Total cost if these devices fail?", "Revenue at risk from predicted failures"
-      
-      - Use "OperationsAnalytics" for work orders and technician assignments
-        Examples: "How many open work orders?", "Which technicians are available?",
-        "Show critical priority jobs", "Unassigned work orders?"
+      SEARCH TOOLS (Cortex Search for RAG):
       
       - Use "TroubleshootingGuide" to search diagnostic procedures and fix instructions
         Examples: "How to fix frozen screen?", "Steps for high CPU issue?",
-        "What causes network connectivity problems?", "Remote restart procedure?",
-        "What to do when device suddenly goes offline?" (Wi-Fi password change)
+        "Remote restart procedure?", "Wi-Fi password change troubleshooting?"
       
       - Use "PastIncidents" to find similar historical issues and proven solutions
-        Examples: "Previous HIGH_CPU incidents?", "How was similar issue resolved?",
-        "Past network problems at this facility?"
+        Examples: "Previous HIGH_CPU incidents?", "How was similar issue resolved?"
       
-      ACTION TOOLS (for executing remote fixes and creating tickets):
+      ACTION TOOLS (Stored procedures for automated remediation):
       
       - Use "SendDeviceCommand" to trigger remote commands on devices
-        Examples: "Restart services on DEV-003", "Clear cache on DEV-005",
-        "Execute remote restart", "Send reboot command"
         Parameters: device_id, command (RESTART_SERVICES, CLEAR_CACHE, RESET_NETWORK, FORCE_REBOOT), reason
       
       - Use "SendAlert" to notify teams via Slack, PagerDuty, or email
-        Examples: "Alert the on-call team about DEV-005", "Send Slack notification",
-        "Notify operations about critical device"
         Parameters: alert_type (SLACK, PAGERDUTY, EMAIL), recipient, device_id, message
       
       - Use "CreateServiceNowIncident" to create work orders/incidents
-        Examples: "Create a ServiceNow ticket for DEV-008", "Open an incident",
-        "Generate a work order for field dispatch"
         Parameters: device_id, priority (CRITICAL, HIGH, MEDIUM, LOW), description
       
-      - Use "ViewRecentActions" to show the audit log of actions taken
-        Examples: "Show recent commands sent", "What actions have been triggered?",
-        "Display the action log"
+      - Use "BatchDeviceCommand" to execute commands on multiple devices at once
+        Parameters: command, criteria (HIGH_RISK, OFFLINE, DEGRADED), reason
       
-      Workflows:
+      WORKFLOWS:
       
       Device Health Analysis:
-      1. Use DeviceFleetAnalytics to get current fleet status
-      2. Identify devices needing attention (CRITICAL or HIGH risk)
+      1. Use DeviceAnalytics to get current fleet status (total, online, offline, degraded)
+      2. Query predicted_failures and devices_at_risk metrics for proactive alerts
       3. For concerning devices, search TroubleshootingGuide for recommended actions
       4. Present summary with specific recommendations
       
       Troubleshooting Workflow:
       1. Search TroubleshootingGuide for the issue type
       2. Search PastIncidents for similar resolved cases
-      3. Use DeviceFleetAnalytics to check current device status
+      3. Use DeviceAnalytics to check current device status and failure classification
       4. Provide step-by-step instructions with success probability
       
       Cost Analysis Workflow:
-      1. Use ROIAnalytics for annual cost baseline and projected savings
-      2. Use MaintenanceAnalytics for current month costs and savings
-      3. Use BusinessImpactAnalytics for revenue impact from downtime
-      4. Calculate ROI: (Cost Savings + Revenue Protected) / Total Investment
-      5. Present with production scale projections (150,000 devices across 30,000 offices)
+      1. Use BusinessImpact for annual cost baseline, projected savings, and ROI
+      2. Use MaintenanceOperations for current month costs and remote fix rate
+      3. Calculate ROI: (Cost Savings + Revenue Protected) / Total Investment
+      4. Present with production scale projections (150,000 devices across 30,000 offices)
       
       Offline Device Investigation Workflow (CRITICAL - Most Common Issue):
       When a device goes offline:
-      1. Use LastGaspAnalytics to check the failure classification
+      1. Use DeviceAnalytics and query the classified_cause and signal_trend dimensions
       2. If WIFI_PASSWORD_CHANGE (90%+ confidence, SUDDEN_DROP pattern):
          - DO NOT dispatch technician
          - Search TroubleshootingGuide for "WIFI_PASSWORD_CHANGE" procedure
@@ -187,16 +173,15 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
          - Use CreateServiceNowIncident for field dispatch
       4. If NETWORK_OUTAGE (multiple devices same office, GRADUAL_DECLINE):
          - Wait and monitor - provider network issue
-      5. Log resolution in last gasp table for future training
       
       Automated Remediation Workflow:
       When user requests a remote fix or action:
-      1. Use DeviceFleetAnalytics to identify the device and current issue
-      2. Search TroubleshootingGuide to determine if remote fix is possible and get commands
+      1. Use DeviceAnalytics to identify the device, current issue, and triage recommendation
+      2. Search TroubleshootingGuide to get specific fix procedures
       3. If remote fix is appropriate (success rate >70%), use SendDeviceCommand to execute it
       4. Use SendAlert to notify the operations team of the action taken
-      5. If remote fix not possible or failed, use CreateServiceNowIncident for field dispatch
-      6. Use ViewRecentActions to confirm the action was logged and show the audit trail
+      5. If remote fix not possible, use CreateServiceNowIncident for field dispatch
+      6. Query MaintenanceOperations to confirm the action was logged
       
       Note: These actions are SIMULATED for demo purposes. The procedures log what
       WOULD be sent to external systems (Device API, Slack, ServiceNow, PagerDuty, etc.)
@@ -228,321 +213,174 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
       "[Key metric] + [Comparison/trend] + [Breakdown] + [Impact statement]"
 
     sample_questions:
+      # Fleet & Device Health (DeviceAnalytics)
       - question: "What is the current health status of our device fleet?"
-        answer: "I'll analyze the fleet using DeviceFleetAnalytics to show online/offline/degraded counts and identify devices needing attention."
+        answer: "I'll use DeviceAnalytics to show online/offline/degraded counts, average health score, and identify devices needing attention."
+      - question: "Which devices are likely to fail in the next 48 hours?"
+        answer: "I'll query DeviceAnalytics for ML predictions - the predicted_failures metric shows devices expected to fail within 48 hours."
+      - question: "Why did device DEV-025 go offline?"
+        answer: "I'll use DeviceAnalytics to check the classified_cause dimension. If it shows WIFI_PASSWORD_CHANGE with SUDDEN_DROP signal trend, this is likely a provider Wi-Fi password change - we should call the office, not dispatch a technician."
+      - question: "How many offline devices are due to Wi-Fi password changes?"
+        answer: "I'll use DeviceAnalytics to query the wifi_password_issues metric for the breakdown of failure causes."
+      - question: "How long have the offline devices been down?"
+        answer: "I'll use DeviceAnalytics to show total_downtime_hours and current_revenue_loss for devices currently offline."
+      
+      # Maintenance & Operations (MaintenanceOperations)
+      - question: "How much money have we saved from remote fixes?"
+        answer: "I'll use MaintenanceOperations to query total_cost_savings from remote fixes vs field dispatches."
+      - question: "What's our remote fix rate?"
+        answer: "I'll use MaintenanceOperations to show the remote_fix_rate metric - percentage of issues resolved without dispatch."
+      - question: "How many open work orders do we have?"
+        answer: "I'll query MaintenanceOperations for total_work_orders and critical_work_orders with priority breakdown."
+      - question: "Which technicians are available?"
+        answer: "I'll use MaintenanceOperations to query available_technicians and their workload."
+      - question: "Show me recent automated actions"
+        answer: "I'll use MaintenanceOperations to display the action audit log showing recent device commands, alerts, and incidents."
+      
+      # Business Impact (BusinessImpact)
+      - question: "What is our average NPS score?"
+        answer: "I'll use BusinessImpact to retrieve the avg_nps_score and satisfaction metrics."
+      - question: "What's our annual field service cost and projected savings?"
+        answer: "I'll use BusinessImpact to show annual_dispatch_cost (~$55M at 150K scale) and projected_annual_savings (~$29M from 60% remote fixes)."
+      - question: "How much revenue have we lost to downtime?"
+        answer: "I'll use BusinessImpact to query total_revenue_loss and total_impressions_lost."
+      
+      # Troubleshooting (Search tools)
       - question: "How do I fix a frozen display screen?"
         answer: "I'll search TroubleshootingGuide for the DISPLAY_FREEZE procedure and check PastIncidents for similar resolved cases."
-      - question: "How much money have we saved from remote fixes?"
-        answer: "I'll use MaintenanceAnalytics to calculate total cost savings from remote fixes vs field dispatches."
-      - question: "Which devices are likely to fail in the next 48 hours?"
-        answer: "I'll query DeviceFleetAnalytics for devices with CRITICAL or HIGH risk levels based on telemetry trends."
-      - question: "What is our average NPS score?"
-        answer: "I'll use BusinessImpactAnalytics to retrieve the Net Promoter Score and satisfaction metrics."
-      - question: "What's our annual field service cost and projected savings?"
-        answer: "I'll use ROIAnalytics to show the cost baseline (~$55M at 150K scale) and projected savings (~$29M annually from 60% remote fixes)."
-      - question: "Why did device DEV-025 go offline?"
-        answer: "I'll use LastGaspAnalytics to check the failure classification. If it shows WIFI_PASSWORD_CHANGE with high confidence, this is likely a provider Wi-Fi password change - we should call the office, not dispatch a technician."
-      - question: "Which devices will fail in the next 48 hours?"
-        answer: "I'll use MLPredictions to show devices predicted to fail within 48 hours based on our trained ML models, sorted by risk level."
-      - question: "How many offline devices are due to Wi-Fi password changes?"
-        answer: "I'll use LastGaspAnalytics to get the breakdown of failure causes across all offline devices."
-      - question: "How long have the offline devices been down and what's the revenue impact?"
-        answer: "I'll use CurrentDowntimeAnalytics to show hours offline, revenue lost so far, and daily burn rate for each offline device."
-      - question: "How many open work orders do we have?"
-        answer: "I'll query OperationsAnalytics for active work orders with priority breakdown."
+      
+      # Action Tools
       - question: "Can you restart services on device DEV-003?"
         answer: "I'll use SendDeviceCommand to trigger a RESTART_SERVICES command on DEV-003. This will be logged for audit purposes."
       - question: "Alert the team about the critical device issue"
         answer: "I'll use SendAlert to send a notification to the operations team via Slack about the critical device."
       - question: "Create a ServiceNow ticket for the overheating device"
         answer: "I'll use CreateServiceNowIncident to create a HIGH priority incident for field dispatch."
-      - question: "Show me what actions have been triggered"
-        answer: "I'll use ViewRecentActions to display the audit log of recent automated actions."
       - question: "Execute remote restarts for all high-risk devices"
-        answer: "I'll use BatchDeviceCommand with criteria 'HIGH_RISK' and command 'RESTART_SERVICES' to restart all devices predicted to fail. This executes in bulk and returns success/failure counts with estimated savings."
-      - question: "Can we prevent any of these predicted failures automatically?"
-        answer: "I'll use DeviceTriageAnalytics to classify which at-risk devices can be fixed remotely (REMOTE_RESTART, WIFI_CREDENTIAL_UPDATE) vs which need field dispatch. Then I can execute batch commands for the remote-fixable ones."
-      - question: "Which failure type costs us the most to fix?"
-        answer: "I'll use FailureCostAnalytics to show the cost breakdown by failure cause - Wi-Fi changes ($150), hardware failures ($280), network outages ($50), and power loss ($100)."
-      - question: "What's the business impact if these predicted failures occur?"
-        answer: "I'll use PredictedImpactAnalytics to calculate total field service cost plus lost ad revenue for all at-risk devices, and show potential savings from remote fixes."
+        answer: "I'll use BatchDeviceCommand with criteria 'HIGH_RISK' and command 'RESTART_SERVICES' to restart all devices predicted to fail."
 
   tools:
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "LastGaspAnalytics"
-        description: |
-          Analyzes "last gasp" telemetry to classify WHY devices went offline.
-          CRITICAL for distinguishing Wi-Fi password changes from hardware failures.
-          
-          Data Coverage:
-          - Final telemetry readings before device went offline
-          - Signal trend: SUDDEN_DROP, GRADUAL_DECLINE, STABLE
-          - Classified cause: WIFI_PASSWORD_CHANGE, HARDWARE_FAILURE, NETWORK_OUTAGE, POWER_LOSS
-          - Classification confidence score (0-1)
-          - Resolution tracking for confirmed causes
-          
-          Failure Patterns:
-          - WIFI_PASSWORD_CHANGE: Sudden signal drop (-45 to -85 dBm), healthy metrics, 90%+ of failures
-          - HARDWARE_FAILURE: High CPU temp, memory issues, error logs, stable signal
-          - NETWORK_OUTAGE: Gradual signal decline, multiple devices same office affected
-          - POWER_LOSS: All metrics normal, instant disconnect, no degradation
-          
-          When to Use:
-          - "Why did this device go offline?"
-          - "Is this a Wi-Fi password change or hardware failure?"
-          - "How many failures were Wi-Fi related vs hardware?"
-          - "Show failure classification for offline devices"
-          
-          IMPORTANT: This determines whether to CALL OFFICE vs DISPATCH TECHNICIAN
+    # =========================================================================
+    # CONSOLIDATED SEMANTIC VIEW TOOLS (3 total)
+    # Following Snowflake best practices: 3-5 tables per semantic view
+    # Reference: https://docs.snowflake.com/en/user-guide/views-semantic/sql
+    # =========================================================================
 
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
-        name: "MLPredictions"
+        name: "DeviceAnalytics"
         description: |
-          Machine learning-powered device failure predictions using trained RandomForest 
-          and GradientBoosting models from the Snowflake Model Registry.
+          UNIFIED device analytics covering health, predictions, failure classification, and triage.
+          This is the PRIMARY tool for ALL device-related queries.
           
-          Data Coverage:
-          - Binary classification: Will device fail within 48 hours? (0/1)
-          - Regression: Predicted hours until failure
-          - Risk level: CRITICAL (will fail 48h), WARNING (degraded), HEALTHY
-          - Based on 19 features including telemetry, trends, and maintenance history
+          DATA COVERAGE (4 tables joined via RELATIONSHIPS):
           
-          Models Used:
-          - DEVICE_FAILURE_CLASSIFIER: RandomForest binary classification
-          - DEVICE_HOURS_TO_FAILURE: GradientBoosting regression
+          1. DEVICE HEALTH (central fact table):
+             - All 100 demo devices (represents 150,000 production scale)
+             - Telemetry: CPU temp, CPU usage, memory, disk, network latency, Wi-Fi signal, errors
+             - Health scores (0-100 scale), risk levels (CRITICAL, HIGH, MEDIUM, LOW)
+             - Network type: PROVIDER_WIFI (90%), COMPANY_MANAGED (8%), CELLULAR (2%)
+             - Device details: model, facility, location, install date, firmware
           
-          Features Analyzed:
-          - 24h and 7d rolling telemetry: CPU temp, memory, errors, Wi-Fi signal
-          - Trend features: CPU temp trend, Wi-Fi signal trend
-          - Device age, network type, maintenance history
-          - Signal volatility and other derived metrics
+          2. ML PREDICTIONS (XGBoost models):
+             - Will device fail within 48 hours? (binary classification)
+             - Predicted hours until failure (regression)
+             - ML risk level: CRITICAL, WARNING, CAUTION, HEALTHY
+             - Primary risk factor explaining the prediction
           
-          When to Use:
-          - "Which devices will fail in the next 48 hours?"
-          - "Show devices by risk level"
-          - "How many devices are predicted to fail?"
-          - "Device failure risk analysis"
-          - Proactive maintenance prioritization
+          3. LAST GASP / FAILURE CLASSIFICATION:
+             - Final telemetry readings before device went offline
+             - Signal trend: SUDDEN_DROP (Wi-Fi change), GRADUAL_DECLINE, STABLE
+             - Classified cause: WIFI_PASSWORD_CHANGE, HARDWARE_FAILURE, NETWORK_OUTAGE, POWER_LOSS
+             - Classification confidence (0-1)
+             - CRITICAL: Determines CALL OFFICE vs DISPATCH TECHNICIAN
+          
+          4. CURRENT DOWNTIME:
+             - Devices currently offline with hours down
+             - Revenue lost so far, daily burn rate
+             - Cause, ticket ID, estimated resolution
+          
+          EXAMPLE QUERIES:
+          - Fleet status: "How many devices online/offline?"
+          - Health: "Average CPU temperature?", "Devices with low health scores?"
+          - Predictions: "Which devices will fail in 48 hours?"
+          - Failure classification: "Why did DEV-025 go offline?", "Is this a Wi-Fi password change?"
+          - Downtime: "How long have offline devices been down?", "Current revenue loss?"
 
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
-        name: "DeviceTriageAnalytics"
+        name: "MaintenanceOperations"
         description: |
-          Classifies at-risk devices into triage categories for action planning.
-          Answers: "Can we fix this remotely or does it need dispatch?"
+          UNIFIED maintenance and operations analytics covering work orders, tickets, technicians, and actions.
+          This is the PRIMARY tool for ALL service and operations queries.
           
-          Triage Actions:
-          - REMOTE_RESTART: High CPU/errors, can restart remotely (cost: $0)
-          - WIFI_CREDENTIAL_UPDATE: Wi-Fi signal issues, call office (cost: $50)
-          - NEEDS_DISPATCH: Hardware failure, requires technician (cost: $185-280)
-          - MONITOR_ONLY: Network outage, usually self-resolves (cost: $0)
+          DATA COVERAGE (4 tables joined via RELATIONSHIPS):
           
-          Data Provided:
-          - Device ID and current status
-          - Triage action recommendation
-          - Estimated resolution cost
-          - Whether remote fix is possible
+          1. WORK ORDERS (central fact table):
+             - Active work orders with priority (CRITICAL, HIGH, MEDIUM, LOW)
+             - Status: OPEN, ASSIGNED, IN_PROGRESS, COMPLETED
+             - Type: PREDICTIVE (AI-generated), REACTIVE, PREVENTIVE
+             - AI diagnosis and recommended actions
+             - Technician assignments
           
-          When to Use:
-          - "Can we prevent these failures automatically?"
-          - "Which devices can we fix remotely?"
-          - "How many need field dispatch?"
-          - "Show triage breakdown for at-risk devices"
+          2. MAINTENANCE TICKETS (history):
+             - Historical tickets with issue types and resolutions
+             - Resolution type: REMOTE_FIX, FIELD_DISPATCH, REPLACEMENT
+             - Costs: actual costs, avoided costs (savings from remote fixes)
+             - MTTR (Mean Time To Resolve) by issue type
+             - Remote fix rate percentage
+          
+          3. TECHNICIANS:
+             - Roster with availability: AVAILABLE, ON_CALL, DISPATCHED, OFF_DUTY
+             - Specialization: Hardware, Software, Network
+             - Certification level: Junior, Senior, Lead
+             - Workload and performance ratings
+          
+          4. ACTION AUDIT LOG:
+             - Automated actions triggered by AI agent
+             - Device commands sent, alerts sent, incidents created
+             - Target systems: Device API, Slack, ServiceNow, PagerDuty
+          
+          EXAMPLE QUERIES:
+          - Work orders: "How many open work orders?", "Critical priority jobs?"
+          - Tickets: "Remote fix rate?", "Average resolution time?", "Cost savings?"
+          - Technicians: "Who is available?", "Team workload?"
+          - Actions: "Show recent automated actions"
 
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
-        name: "FailureCostAnalytics"
+        name: "BusinessImpact"
         description: |
-          Analyzes costs by failure cause type.
-          Answers: "Which failure type costs us the most to fix?"
+          UNIFIED business impact analytics covering revenue, satisfaction, and ROI.
+          This is the PRIMARY tool for ALL financial and executive queries.
           
-          Failure Types and Avg Costs:
-          - WIFI_PASSWORD_CHANGE: $150 (phone call + remote config)
-          - HARDWARE_FAILURE: $280 (truck roll + parts)
-          - NETWORK_OUTAGE: $50 (monitoring, usually self-resolves)
-          - POWER_LOSS: $100 (remote restart or quick visit)
+          DATA COVERAGE (3 tables joined via RELATIONSHIPS):
           
-          Data Provided:
-          - Incident count by cause (last 30 days)
-          - Average cost per incident type
-          - Total cost by failure cause
-          - Whether each type is remote-fixable
+          1. REVENUE IMPACT (central fact table):
+             - Revenue loss from device downtime per device
+             - Advertising impressions lost
+             - Uptime percentage (target: 95%+)
+             - Potential vs actual monthly revenue
           
-          When to Use:
-          - "Which failure type costs most?"
-          - "Cost breakdown by failure cause"
-          - "Are Wi-Fi issues more expensive than hardware?"
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "PredictedImpactAnalytics"
-        description: |
-          Calculates business impact if predicted failures occur.
-          Answers: "What's the cost if these devices fail?"
+          2. CUSTOMER SATISFACTION:
+             - NPS scores (-100 to 100) and categories (PROMOTER, PASSIVE, DETRACTOR)
+             - Satisfaction ratings (1-5 stars)
+             - Device reliability ratings
+             - Positive/negative feedback counts
+             - Follow-up actions required
           
-          Impact Calculation:
-          - Field service cost (dispatch vs remote fix)
-          - Lost ad revenue (24h estimated downtime)
-          - Total business impact per device
+          3. ROI ANALYSIS (production projections):
+             - Annual field dispatch cost baseline (~$55M at 150K devices)
+             - Projected annual savings (~$29M from 60% remote fixes)
+             - Cost per dispatch ($185) vs cost per remote fix ($25)
+             - Dispatches avoided annually
+             - Actual savings to date
           
-          Summary Metrics:
-          - Total devices at risk
-          - Devices fixable remotely vs needing dispatch
-          - Total field service cost exposure
-          - Total potential revenue loss
-          - Potential savings from remote fixes
-          
-          When to Use:
-          - "What's the business impact if predicted failures occur?"
-          - "Total cost exposure from at-risk devices"
-          - "How much can we save with remote fixes?"
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "DeviceFleetAnalytics"
-        description: |
-          Analyzes device inventory, health scores, telemetry metrics, and fleet status 
-          for all HealthScreen devices.
-          
-          Data Coverage:
-          - All 100 demo devices (represents 150,000 production scale across 30,000 offices)
-          - Telemetry: CPU temp, CPU usage, memory, disk, network latency, Wi-Fi signal, errors
-          - Health scores calculated from telemetry (0-100 scale)
-          - Risk levels: CRITICAL, HIGH, MEDIUM, LOW
-          - Network type: PROVIDER_WIFI (90%), COMPANY_MANAGED (8%), CELLULAR (2%)
-          - Device details: model, facility, location, install date, firmware
-          
-          When to Use:
-          - Questions about device counts, status, or inventory
-          - Health score queries and risk assessments  
-          - Telemetry metrics (temperature, CPU, memory)
-          - Identifying devices needing maintenance
-          
-          When NOT to Use:
-          - Do NOT use for maintenance ticket history (use MaintenanceAnalytics)
-          - Do NOT use for revenue or downtime impact (use BusinessImpactAnalytics)
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "MaintenanceAnalytics"
-        description: |
-          Analyzes maintenance ticket history, resolution methods, costs, and efficiency 
-          metrics for all service activities.
-          
-          Data Coverage:
-          - Historical maintenance tickets with issue types and resolutions
-          - Cost data: actual costs, avoided costs (savings from remote fixes)
-          - Resolution times (MTTR) by issue type and resolution method
-          - Technician assignments and performance
-          
-          When to Use:
-          - Questions about maintenance costs and savings
-          - Remote fix rate and field dispatch statistics
-          - Resolution time (MTTR) analysis
-          - Issue type frequency and trends
-          
-          When NOT to Use:
-          - Do NOT use for current device status (use DeviceFleetAnalytics)
-          - Do NOT use for troubleshooting steps (use TroubleshootingGuide)
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "BusinessImpactAnalytics"
-        description: |
-          Analyzes revenue impact, customer satisfaction, and business KPIs related to 
-          device performance and downtime.
-          
-          Data Coverage:
-          - Revenue loss from device downtime
-          - Advertising impressions lost
-          - Uptime percentages by device/facility
-          - NPS scores and satisfaction ratings
-          - Provider feedback (positive/negative)
-          
-          When to Use:
-          - Questions about revenue impact or lost revenue
-          - Customer satisfaction and NPS queries
-          - Uptime and availability metrics
-          
-          When NOT to Use:
-          - Do NOT use for device telemetry (use DeviceFleetAnalytics)
-          - Do NOT use for maintenance tickets (use MaintenanceAnalytics)
-          - Do NOT use for annual costs or ROI projections (use ROIAnalytics)
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "ROIAnalytics"
-        description: |
-          Analyzes annual field service costs, projected savings, and ROI from 
-          predictive maintenance at production scale.
-          
-          Data Coverage:
-          - Annual field dispatch cost baseline (~$55M at 150K devices)
-          - Projected annual savings from remote fixes (~$29M)
-          - Cost per dispatch ($185) vs cost per remote fix ($25)
-          - Remote fix rate and dispatches avoided
-          - Production scale projections (150,000 devices across 30,000 offices)
-          
-          When to Use:
-          - Executive ROI and cost justification questions
-          - "What's our annual field service cost?"
-          - "How much can we save with predictive maintenance?"
-          - "What's the projected ROI?"
-          - Cost baseline and savings projections
-          
-          When NOT to Use:
-          - Do NOT use for current month savings (use MaintenanceAnalytics)
-          - Do NOT use for individual ticket costs (use MaintenanceAnalytics)
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "CurrentDowntimeAnalytics"
-        description: |
-          Analyzes CURRENTLY OFFLINE devices and their active revenue loss.
-          Shows how long devices have been down and the business impact RIGHT NOW.
-          
-          Data Coverage:
-          - Devices currently experiencing downtime (OFFLINE status)
-          - Hours offline for each device
-          - Revenue lost so far (calculated in real-time)
-          - Impressions lost
-          - Daily burn rate (revenue loss per day)
-          - Cause, ticket ID, and estimated resolution
-          
-          When to Use:
-          - "How long have the offline devices been down?"
-          - "What revenue are we losing RIGHT NOW?"
-          - "Show me current active downtime"
-          - "Which devices need urgent attention and why?"
-          - "What's the cost of the current outages?"
-          
-          When NOT to Use:
-          - Do NOT use for historical downtime (use BusinessImpactAnalytics)
-          - Do NOT use for projected/annual costs (use ROIAnalytics)
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "OperationsAnalytics"
-        description: |
-          Analyzes work orders, technician assignments, and field operations for 
-          maintenance scheduling and dispatch management.
-          
-          Data Coverage:
-          - Active work orders with priority and status
-          - Technician roster, availability, and workload
-          - AI-generated vs manual work orders
-          - Scheduling and dispatch metrics
-          
-          When to Use:
-          - Questions about work orders and assignments
-          - Technician availability and workload
-          - Dispatch scheduling and prioritization
-          
-          When NOT to Use:
-          - Do NOT use for completed maintenance history (use MaintenanceAnalytics)
-          - Do NOT use for device telemetry (use DeviceFleetAnalytics)
+          EXAMPLE QUERIES:
+          - Revenue: "Total revenue lost to downtime?", "Impressions lost?"
+          - Satisfaction: "What is our NPS score?", "Negative feedback?"
+          - ROI: "Annual field service cost?", "Projected savings?"
+          - Executive: "Cost per dispatch vs remote?", "ROI of predictive maintenance?"
 
     - tool_spec:
         type: "cortex_search"
@@ -748,53 +586,36 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
             - priority
             - description
 
-    # =========================================================================
-    # ACTION AUDIT TOOL - View logged actions
-    # =========================================================================
-
-    - tool_spec:
-        type: "cortex_analyst_text_to_sql"
-        name: "ViewRecentActions"
-        description: |
-          Shows the audit log of recent automated actions taken by the system.
-          Use this to confirm actions were logged and show what was triggered.
-          
-          When to Use:
-          - After executing a command to confirm it was logged
-          - User asks "what actions have been taken?"
-          - Show audit trail of system activities
-
+  # ============================================================================
+    # CONSOLIDATED SEMANTIC VIEWS (3 total - following Snowflake best practices)
+    # Reference: https://docs.snowflake.com/en/user-guide/views-semantic/sql
+    # ============================================================================
+    
   tool_resources:
-    DeviceFleetAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_DEVICE_FLEET"
-    MaintenanceAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_MAINTENANCE_ANALYTICS"
-    BusinessImpactAnalytics:
+    # PRIMARY ANALYTICS TOOL: Device health, predictions, failure classification, triage
+    # Combines: devices, ML predictions, last gasp, downtime
+    DeviceAnalytics:
+      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_DEVICE_ANALYTICS"
+    
+    # MAINTENANCE TOOL: Work orders, tickets, technicians, action log
+    # Combines: work orders, maintenance history, technician workload, actions
+    MaintenanceOperations:
+      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_MAINTENANCE_OPERATIONS"
+    
+    # BUSINESS TOOL: Revenue, satisfaction, ROI projections
+    # Combines: revenue impact, NPS/satisfaction, ROI analysis
+    BusinessImpact:
       semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_BUSINESS_IMPACT"
-    CurrentDowntimeAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_CURRENT_DOWNTIME"
-    ROIAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_ROI_ANALYSIS"
-    OperationsAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_OPERATIONS"
+    
+    # SEARCH TOOLS (Cortex Search for RAG)
     TroubleshootingGuide:
       name: "DEVICE_MAINTENANCE.DEVICE_OPS.TROUBLESHOOTING_SEARCH_SVC"
       max_results: "5"
     PastIncidents:
       name: "DEVICE_MAINTENANCE.DEVICE_OPS.MAINTENANCE_HISTORY_SEARCH_SVC"
       max_results: "5"
-    LastGaspAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_LAST_GASP_ANALYSIS"
-    MLPredictions:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_ML_PREDICTIONS"
-    DeviceTriageAnalytics:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_DEVICE_TRIAGE"
-    FailureCostAnalytics:
-      table: "DEVICE_MAINTENANCE.DEVICE_OPS.V_COST_BY_FAILURE_CAUSE"
-    PredictedImpactAnalytics:
-      table: "DEVICE_MAINTENANCE.DEVICE_OPS.V_PREDICTED_IMPACT_SUMMARY"
     
-    # Custom tool resources (stored procedures)
+    # ACTION TOOLS (Stored procedures for automated remediation)
     BatchDeviceCommand:
       type: "procedure"
       execution_environment:
@@ -819,9 +640,6 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
         type: "warehouse"
         warehouse: "COMPUTE_WH"
       identifier: "DEVICE_MAINTENANCE.DEVICE_OPS.CREATE_SERVICENOW_INCIDENT"
-    
-    ViewRecentActions:
-      semantic_view: "DEVICE_MAINTENANCE.DEVICE_OPS.SV_EXTERNAL_ACTIONS"
   $$;
 
 -- ============================================================================
@@ -870,5 +688,6 @@ SELECT * FROM V_RECENT_EXTERNAL_ACTIONS WHERE DEVICE_ID = 'DEV-TEST';
 DELETE FROM EXTERNAL_ACTION_LOG WHERE TARGET_DEVICE_ID = 'DEV-TEST';
 
 -- Verify semantic view for actions
-SELECT * FROM SV_EXTERNAL_ACTIONS LIMIT 5;
+-- Action log is now part of SV_MAINTENANCE_OPERATIONS
+SELECT * FROM V_RECENT_EXTERNAL_ACTIONS LIMIT 5;
 
