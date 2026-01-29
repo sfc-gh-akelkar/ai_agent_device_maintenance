@@ -97,18 +97,20 @@ Execute these scripts in Snowsight **in order**:
 -- 05_predictive_simulation.sql       -- Base prediction views
 ```
 
-### Step 2: Run the ML Notebook (Required)
+### Step 2: Run the ML Notebook (Required - Before Demo)
 
 Open and execute **all cells** in `notebooks/ML_Device_Failure_Prediction.ipynb`:
 
-| What It Does | Snowflake Feature |
-|--------------|-------------------|
-| Feature engineering (29 features) | SQL window functions |
-| Train XGBoost classifier | Snowpark ML |
-| Train XGBoost regressor | Snowpark ML |
-| Train Last Gasp classifier | Snowpark ML |
-| Log models to registry | Model Registry |
-| Create prediction views | MODEL!PREDICT() |
+| What It Does | Snowflake Feature | Output |
+|--------------|-------------------|--------|
+| Feature engineering (29 features) | SQL window functions | `V_DEVICE_ML_FEATURES` view |
+| Train XGBoost classifier | Snowpark ML | `DEVICE_FAILURE_CLASSIFIER` model |
+| Train XGBoost regressor | Snowpark ML | `DEVICE_HOURS_TO_FAILURE` model |
+| Train Last Gasp classifier | Snowpark ML | `LAST_GASP_CLASSIFIER` model |
+| Log models to registry | Model Registry | Versioned, governed models |
+| Materialize predictions | MODEL!PREDICT() → Table | **`T_ML_PREDICTIONS` table** |
+
+> **Demo Note**: Run this notebook **before** the demo. During the demo, walk through the notebook to explain the ML pipeline, then use Snowflake Intelligence to query the pre-computed predictions stored in `T_ML_PREDICTIONS`.
 
 ### Step 3: Run Enhanced Capabilities
 
@@ -123,7 +125,7 @@ Open and execute **all cells** in `notebooks/ML_Device_Failure_Prediction.ipynb`
 -- Then re-run the notebook for better model accuracy
 ```
 
-### Step 2: Access via Snowflake Intelligence
+### Step 4: Access via Snowflake Intelligence
 
 1. Navigate to **AI & ML → Snowflake Intelligence**
 2. Select **Device Maintenance Assistant**
