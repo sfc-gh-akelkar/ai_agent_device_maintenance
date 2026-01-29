@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowflake Intelligence: Device Maintenance Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .slide-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px 0;
+        }
+
+        .slide-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a2e;
+            padding: 0 0 24px 0;
+        }
+
+        /* Main wrapper with pink border */
+        .main-wrapper {
+            border: 3px solid #C4157A;
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .main-banner {
+            background: linear-gradient(90deg, #E91E8C 0%, #C4157A 100%);
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            font-size: 20px;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .content-area {
+            padding: 24px 30px 30px;
+        }
+
+        .top-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 0;
+        }
+
+        .cortex-agents-box {
+            flex: 1;
+            background: linear-gradient(180deg, #C0C0C0 0%, #A8A8A8 50%, #909090 100%);
+            border-radius: 8px;
+            padding: 40px 30px;
+            text-align: center;
+            color: #1a1a2e;
+            border: 2px solid #666;
+        }
+
+        .cortex-agents-box h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #222;
+        }
+
+        .cortex-agents-box p {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .si-tools-box {
+            width: 200px;
+            background: #FF9500;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .si-tools-box h3 {
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .tool-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Tree connector structure */
+        .connector-container {
+            position: relative;
+            height: 60px;
+            margin-top: 0;
+        }
+
+        /* Vertical line from agents box */
+        .connector-container::before {
+            content: '';
+            position: absolute;
+            left: calc(50% - 100px);
+            top: 0;
+            width: 2px;
+            height: 30px;
+            background: #999;
+        }
+
+        /* Horizontal line */
+        .connector-container::after {
+            content: '';
+            position: absolute;
+            left: 80px;
+            right: 80px;
+            top: 30px;
+            height: 2px;
+            background: #999;
+        }
+
+        .vertical-drops {
+            position: absolute;
+            top: 30px;
+            left: 80px;
+            right: 80px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .vertical-drop {
+            width: 2px;
+            height: 30px;
+            background: #999;
+        }
+
+        .assistants-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .assistant-card {
+            border-radius: 0;
+            overflow: hidden;
+            border: 2px solid #1E3A5F;
+        }
+
+        .assistant-card.search {
+            border-color: #008080;
+        }
+
+        .assistant-header {
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .assistant-header.analyst {
+            background: #1E3A5F;
+            color: white;
+        }
+
+        .assistant-header.search {
+            background: #008080;
+            color: white;
+        }
+
+        .assistant-header .type {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 2px;
+            text-decoration: underline;
+        }
+
+        .assistant-header .name {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .semantic-view-bar {
+            background: #00A5B5;
+            color: white;
+            padding: 10px 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .tables-container {
+            background: white;
+            padding: 8px;
+        }
+
+        .tables-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .table-item {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px 6px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+
+        .table-item.document::after {
+            content: ' 📄';
+            font-size: 10px;
+        }
+
+        .table-item.span-full {
+            grid-column: 1;
+        }
+
+        .table-item.empty {
+            border: none;
+            background: transparent;
+        }
+
+        /* Single column items */
+        .tables-grid.has-odd .table-item:last-child:nth-child(odd) {
+            grid-column: 1;
+        }
+
+        .footer-note {
+            margin-top: 40px;
+            padding: 20px 30px;
+            background: #1E3A5F;
+            border-radius: 8px;
+            display: flex;
+            gap: 50px;
+            justify-content: center;
+            color: white;
+        }
+
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .footer-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .footer-item strong {
+            color: #00D4FF;
+        }
+
+        .page-number {
+            text-align: right;
+            padding: 20px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <h1 class="slide-title">Snowflake Intelligence: Device Maintenance Assistant</h1>
+        
+        <div class="main-wrapper">
+            <div class="main-banner">
+                Device Maintenance Assistant on Snowflake Intelligence
+            </div>
+
+            <div class="content-area">
+                <div class="top-section">
+                    <div class="cortex-agents-box">
+                        <h2>Cortex Agents</h2>
+                        <p>Orchestration, Tool Use, Reflect, Monitor, Iterate</p>
+                    </div>
+                    <div class="si-tools-box">
+                        <h3>SI Native Tools</h3>
+                        <div class="tools-grid">
+                            <div class="tool-item">Visualization</div>
+                            <div class="tool-item">Coding</div>
+                            <div class="tool-item">Web Search</div>
+                            <div class="tool-item">Custom Tools</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="connector-container">
+                    <div class="vertical-drops">
+                        <div class="vertical-drop"></div>
+                        <div class="vertical-drop"></div>
+                        <div class="vertical-drop"></div>
+                        <div class="vertical-drop"></div>
+                    </div>
+                </div>
+
+                <div class="assistants-row">
+                    <!-- Device Analytics Assistant -->
+                    <div class="assistant-card">
+                        <div class="assistant-header analyst">
+                            <div class="type">Cortex Analyst</div>
+                            <div class="name">Device Analytics Assistant</div>
+                        </div>
+                        <div class="semantic-view-bar">SV_DEVICE_ANALYTICS</div>
+                        <div class="tables-container">
+                            <div class="tables-grid">
+                                <div class="table-item">Device Inventory</div>
+                                <div class="table-item">Device Telemetry</div>
+                                <div class="table-item">ML Predictions</div>
+                                <div class="table-item">Last Gasp Events</div>
+                                <div class="table-item">Device Downtime</div>
+                                <div class="table-item empty"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance Assistant -->
+                    <div class="assistant-card">
+                        <div class="assistant-header analyst">
+                            <div class="type">Cortex Analyst</div>
+                            <div class="name">Maintenance Assistant</div>
+                        </div>
+                        <div class="semantic-view-bar">SV_MAINTENANCE_OPERATIONS</div>
+                        <div class="tables-container">
+                            <div class="tables-grid">
+                                <div class="table-item">Work Orders</div>
+                                <div class="table-item">Maintenance History</div>
+                                <div class="table-item">Technicians</div>
+                                <div class="table-item">Resolution Actions</div>
+                                <div class="table-item">Ticket Queue</div>
+                                <div class="table-item empty"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Impact Assistant -->
+                    <div class="assistant-card">
+                        <div class="assistant-header analyst">
+                            <div class="type">Cortex Analyst</div>
+                            <div class="name">Business Impact Assistant</div>
+                        </div>
+                        <div class="semantic-view-bar">SV_BUSINESS_IMPACT</div>
+                        <div class="tables-container">
+                            <div class="tables-grid">
+                                <div class="table-item">Facility Revenue</div>
+                                <div class="table-item">Customer Satisfaction</div>
+                                <div class="table-item">ROI Metrics</div>
+                                <div class="table-item">SLA Metrics</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Knowledge Base Assistant -->
+                    <div class="assistant-card search">
+                        <div class="assistant-header search">
+                            <div class="type">Cortex Search</div>
+                            <div class="name">Knowledge Base Assistant</div>
+                        </div>
+                        <div class="semantic-view-bar">Maintenance Knowledge Base</div>
+                        <div class="tables-container">
+                            <div class="tables-grid">
+                                <div class="table-item document">Troubleshooting Guides</div>
+                                <div class="table-item document">Device Manuals</div>
+                                <div class="table-item document">Error Codes</div>
+                                <div class="table-item document">Installation Guides</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <div class="footer-item">
+                <div class="footer-icon">🤖</div>
+                <span><strong>XGBoost ML</strong> - Predicts failures 48h ahead</span>
+            </div>
+            <div class="footer-item">
+                <div class="footer-icon">⚡</div>
+                <span><strong>MODEL!PREDICT()</strong> - Real-time SQL inference</span>
+            </div>
+            <div class="footer-item">
+                <div class="footer-icon">📊</div>
+                <span><strong>29 Features</strong> - Engineered from telemetry</span>
+            </div>
+            <div class="footer-item">
+                <div class="footer-icon">🔄</div>
+                <span><strong>Dynamic Tables</strong> - Auto-refresh predictions</span>
+            </div>
+        </div>
+
+        <div class="page-number">34</div>
+    </div>
+</body>
+</html>

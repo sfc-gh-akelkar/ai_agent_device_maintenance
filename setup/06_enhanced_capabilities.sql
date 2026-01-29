@@ -300,9 +300,9 @@ WITH predictions AS (
         p.DEVICE_ID,
         p.RISK_LEVEL,
         p.PREDICTED_HOURS_TO_FAILURE,
-        p.DEVICE_TYPE,  -- Use DEVICE_TYPE from predictions view (already computed)
-        p.FACILITY_NAME,
-        p.HOURLY_AD_REVENUE_USD as HOURLY_REVENUE,  -- Use actual device revenue
+        p.DEVICE_TYPE,
+        d.FACILITY_NAME,
+        d.HOURLY_AD_REVENUE_USD as HOURLY_REVENUE,
         -- Estimated resolution cost
         CASE 
             WHEN t.REMOTE_FIXABLE THEN 25    -- Remote fix cost
@@ -311,6 +311,7 @@ WITH predictions AS (
         t.TRIAGE_ACTION,
         t.REMOTE_FIXABLE
     FROM V_ML_FAILURE_PREDICTIONS p
+    JOIN DEVICE_INVENTORY d ON p.DEVICE_ID = d.DEVICE_ID
     LEFT JOIN V_DEVICE_TRIAGE t ON p.DEVICE_ID = t.DEVICE_ID
     WHERE p.WILL_FAIL_48H = 1
 )

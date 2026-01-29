@@ -27,7 +27,7 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
   COMMENT = 'Device Maintenance Assistant - Monitors 150,000 HealthScreen devices across 30,000 provider offices, diagnoses issues, and provides maintenance recommendations using predictive analytics.'
   PROFILE = '{"display_name": "Device Maintenance Assistant", "avatar": "wrench", "color": "blue"}'
   FROM SPECIFICATION
-  $
+  $$
   models:
     orchestration: claude-4-sonnet
 
@@ -195,6 +195,14 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
       - Include device IDs when discussing specific units
       - Flag urgent issues prominently with clear action items
       
+      Data Scope (CRITICAL):
+      - ONLY report metrics that come directly from the semantic views
+      - DO NOT extrapolate or calculate "production scale" numbers unless specifically asked
+      - Production scale is 150,000 devices across 30,000 offices (NOT 500,000)
+      - When asked about production projections, use the pre-calculated values from BusinessImpact
+        (annual_dispatch_cost ~$55M, projected_annual_savings ~$29M)
+      - Never invent revenue or cost numbers - use only what the data provides
+      
       Presentation:
       - Use tables for comparisons across multiple devices/categories (>3 items)
       - Use charts for time-series trends and distributions
@@ -210,7 +218,8 @@ CREATE OR REPLACE AGENT DEVICE_MAINTENANCE_AGENT
       "[Issue identification] + [Step-by-step procedure] + [Success rate] + [Escalation path]"
       
       For cost/business questions:
-      "[Key metric] + [Comparison/trend] + [Breakdown] + [Impact statement]"
+      "[Key metric from data] + [Comparison/trend] + [Breakdown] + [Impact statement]"
+      DO NOT extrapolate to production scale unless the user specifically asks for projections.
 
     sample_questions:
       # Fleet & Device Health (DeviceAnalytics)

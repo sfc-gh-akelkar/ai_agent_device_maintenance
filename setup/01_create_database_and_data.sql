@@ -971,6 +971,7 @@ SELECT
     d.STATUS,
     d.HOURLY_AD_REVENUE_USD,
     d.MONTHLY_IMPRESSIONS,
+    d.NETWORK_TYPE,
     t.CPU_TEMP_CELSIUS,
     -- Cap percentages at 100% for display (handles any bad legacy data)
     LEAST(100, t.CPU_USAGE_PCT) as CPU_USAGE_PCT,
@@ -1158,7 +1159,7 @@ CREATE OR REPLACE VIEW V_ROI_ANALYSIS AS
 SELECT 
     -- Fleet scale
     (SELECT COUNT(*) FROM DEVICE_INVENTORY) as DEMO_DEVICE_COUNT,
-    500000 as PRODUCTION_DEVICE_COUNT,
+    150000 as PRODUCTION_DEVICE_COUNT,  -- 150K devices across 30K provider offices
     
     -- Cost assumptions (industry standard)
     185.00 as AVG_FIELD_DISPATCH_COST_USD,
@@ -1174,19 +1175,19 @@ SELECT
     -- Demo-scale annual projection (100 devices, ~24 tickets/month = ~288/year)
     ROUND(288 * 185.00, 2) as DEMO_ANNUAL_DISPATCH_COST_USD,
     
-    -- Production-scale annual projection (500,000 devices)
-    -- Assuming 2 issues per device per year = 1,000,000 potential dispatches
-    ROUND(1000000 * 185.00, 2) as PRODUCTION_ANNUAL_DISPATCH_COST_USD,
+    -- Production-scale annual projection (150,000 devices)
+    -- Assuming 2 issues per device per year = 300,000 potential dispatches
+    ROUND(300000 * 185.00, 2) as PRODUCTION_ANNUAL_DISPATCH_COST_USD,  -- $55.5M
     
     -- Savings calculation with 60% remote fix rate
-    ROUND(1000000 * 0.60 * (185.00 - 25.00), 2) as PROJECTED_ANNUAL_SAVINGS_USD,
+    ROUND(300000 * 0.60 * (185.00 - 25.00), 2) as PROJECTED_ANNUAL_SAVINGS_USD,  -- $28.8M
     
     -- Cost savings already achieved (from actual data)
     (SELECT COALESCE(SUM(COST_SAVINGS_USD), 0) FROM V_MAINTENANCE_ANALYTICS) as ACTUAL_SAVINGS_TO_DATE_USD,
     
     -- Avoided dispatches
     (SELECT COUNT(*) FROM MAINTENANCE_HISTORY WHERE RESOLUTION_TYPE = 'REMOTE_FIX') as DISPATCHES_AVOIDED,
-    ROUND(1000000 * 0.60, 0) as PROJECTED_ANNUAL_DISPATCHES_AVOIDED;
+    ROUND(300000 * 0.60, 0) as PROJECTED_ANNUAL_DISPATCHES_AVOIDED;  -- 180K avoided
 
 -- Verify data loaded correctly
 SELECT 'DEVICE_INVENTORY' as TABLE_NAME, COUNT(*) as ROW_COUNT FROM DEVICE_INVENTORY
@@ -1474,3 +1475,54 @@ SELECT
 FROM DEVICE_INVENTORY;
 
 GRANT SELECT ON TABLE T_ML_PREDICTIONS TO ROLE SF_INTELLIGENCE_DEMO;
+
+-- ============================================================================
+-- STUB VIEW: V_ML_FAILURE_PREDICTIONS
+-- Wraps T_ML_PREDICTIONS for consistent interface
+-- ============================================================================
+CREATE OR REPLACE VIEW V_ML_FAILURE_PREDICTIONS AS
+SELECT * FROM T_ML_PREDICTIONS;
+
+GRANT SELECT ON VIEW V_ML_FAILURE_PREDICTIONS TO ROLE SF_INTELLIGENCE_DEMO;
+
+-- ============================================================================
+-- STUB VIEW: V_DEVICE_ML_FEATURES
+-- Basic feature engineering until notebook creates full version
+-- ============================================================================
+CREATE OR REPLACE VIEW V_DEVICE_ML_FEATURES AS
+WITH recent_telemetry AS (
+    SELECT 
+        DEVICE_ID,
+        AVG(CPU_TEMP_CELSIUS) as AVG_CPU_TEMP_24H,
+        AVG(CPU_USAGE_PCT) as AVG_CPU_USAGE_24H,
+        AVG(MEMORY_USAGE_PCT) as AVG_MEMORY_24H,
+        SUM(ERROR_COUNT) as ERRORS_24H,
+        AVG(WIFI_SIGNAL_STRENGTH) as AVG_WIFI_SIGNAL_24H,
+        STDDEV(WIFI_SIGNAL_STRENGTH) as WIFI_SIGNAL_VOLATILITY,
+        MAX(CPU_TEMP_CELSIUS) as MAX_CPU_TEMP_24H,
+        MAX(MEMORY_USAGE_PCT) as MAX_MEMORY_24H
+    FROM DEVICE_TELEMETRY
+    WHERE TIMESTAMP >= DATEADD('hour', -24, CURRENT_TIMESTAMP())
+    GROUP BY DEVICE_ID
+)
+SELECT 
+    d.DEVICE_ID,
+    d.STATUS,
+    d.DEVICE_MODEL as DEVICE_TYPE,
+    d.NETWORK_TYPE,
+    COALESCE(t.AVG_CPU_TEMP_24H, 45) as AVG_CPU_TEMP_24H,
+    COALESCE(t.AVG_CPU_USAGE_24H, 30) as AVG_CPU_USAGE_24H,
+    COALESCE(t.AVG_MEMORY_24H, 50) as AVG_MEMORY_24H,
+    COALESCE(t.ERRORS_24H, 0) as ERRORS_24H,
+    COALESCE(t.AVG_WIFI_SIGNAL_24H, -55) as AVG_WIFI_SIGNAL_24H,
+    COALESCE(t.WIFI_SIGNAL_VOLATILITY, 5) as WIFI_SIGNAL_VOLATILITY,
+    0 as WIFI_SIGNAL_TREND,
+    0 as CPU_TEMP_TREND,
+    COALESCE(t.MAX_CPU_TEMP_24H, 50) as MAX_CPU_TEMP_24H,
+    COALESCE(t.MAX_MEMORY_24H, 60) as MAX_MEMORY_24H,
+    DATEDIFF('day', d.INSTALL_DATE, CURRENT_DATE()) as DEVICE_AGE_DAYS,
+    DATEDIFF('day', d.LAST_MAINTENANCE_DATE, CURRENT_DATE()) as DAYS_SINCE_MAINTENANCE
+FROM DEVICE_INVENTORY d
+LEFT JOIN recent_telemetry t ON d.DEVICE_ID = t.DEVICE_ID;
+
+GRANT SELECT ON VIEW V_DEVICE_ML_FEATURES TO ROLE SF_INTELLIGENCE_DEMO;
