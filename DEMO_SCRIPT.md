@@ -1058,14 +1058,14 @@ ORDER BY FAILURE_PROBABILITY_PCT DESC;
 | What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **30-day telemetry window** | Your **optimal prediction window** (could be 7, 14, 60 days) | Tune based on failure patterns |
-| **Rule-based prediction** | Your choice: **Cortex ML models** for higher accuracy | Train on historical failure data |
+| **XGBoost Classification** | Your choice of **Cortex ML models** | Train on historical failure data |
 | **Failure probability %** | Your **confidence thresholds** for action | Business rule configuration |
 
-**ML Model Options for Production:**
-1. **Rule-Based (Current)**: Simple threshold logic, ~85% accuracy
-2. **Cortex ML Classification**: Train on historical failures, ~90%+ accuracy
-3. **Anomaly Detection**: Identify unusual patterns automatically
-4. **Time-Series Forecasting**: Predict when metrics will cross thresholds
+**This Demo Uses Real ML Models:**
+1. **XGBoost Classification**: Binary classifier for 48-hour failure prediction
+2. **XGBoost Regression**: Hours-to-failure estimation
+3. **Last Gasp Classifier**: Multi-class failure cause classification
+4. **Model Registry**: All models logged and versioned in Snowflake
 
 **ML Data Requirements:**
 - **Positive Examples**: Historical failures with telemetry before failure
@@ -1073,7 +1073,7 @@ ORDER BY FAILURE_PROBABILITY_PCT DESC;
 - **Minimum Data**: 6-12 months of telemetry + failure records
 
 **SAY THIS:**
-> *"In the demo, we're using rule-based predictions. In production, you could train a Cortex ML model on your historical failure data—devices that actually failed, correlated with their telemetry leading up to failure. This typically pushes accuracy above 90%."*
+> *"This demo uses real XGBoost models trained on device telemetry and logged to Snowflake's Model Registry. The predictions you see come from actual model inference—not rules. In production, you'd retrain on your full historical dataset for even higher accuracy."*
 
 #### 🔄 Transition
 > *"But how accurate are these predictions? Let me prove it..."*

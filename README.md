@@ -67,9 +67,10 @@ ai_agent_device_maintenance/
 │   ├── 03_create_cortex_search.sql        # Knowledge base search services
 │   ├── 04_create_agent.sql                # Agent configuration
 │   ├── 05_predictive_simulation.sql       # Predictive analytics views
-│   ├── 05b_ml_prediction_views.sql        # ML prediction views (bridge script)
 │   ├── 06_enhanced_capabilities.sql       # Batch commands, triage, impact analysis
 │   └── 07_expanded_training_data.sql      # Optional: 6 months training data
+├── notebooks/
+│   └── ML_Device_Failure_Prediction.ipynb # XGBoost training & Model Registry (REQUIRED)
 ├── DEMO_SCRIPT.md                         # 20-minute demo walkthrough
 ├── ARCHITECTURE.md                        # Implementation architecture & diagrams
 └── README.md                              # This file
@@ -84,48 +85,42 @@ ai_agent_device_maintenance/
 - ACCOUNTADMIN role (for initial setup)
 - The demo uses the `SF_INTELLIGENCE_DEMO` role (created automatically)
 
-### Step 1: Choose Your Demo Path
+### Step 1: Run SQL Setup Scripts
 
-#### Option A: Quick Demo (Rule-Based Predictions)
-*Best for: Quick setup, no notebook required*
+Execute these scripts in Snowsight **in order**:
 
 ```sql
--- Run in Snowsight in order:
--- 01_create_database_and_data.sql    -- Base tables
--- 02_create_semantic_views.sql       -- Semantic views
--- 03_create_cortex_search.sql        -- Search services
--- 04_create_agent.sql                -- Agent definition
--- 05_predictive_simulation.sql       -- Prediction simulation
--- 05b_ml_prediction_views.sql        -- Rule-based prediction views
--- 06_enhanced_capabilities.sql       -- Batch commands, triage
+-- 01_create_database_and_data.sql    -- Database, tables, sample data
+-- 02_create_semantic_views.sql       -- Semantic views for Cortex Analyst
+-- 03_create_cortex_search.sql        -- Search services for RAG
+-- 04_create_agent.sql                -- Agent configuration
+-- 05_predictive_simulation.sql       -- Base prediction views
 ```
 
-#### Option B: Full ML Demo (Recommended) ⭐
-*Best for: Showcasing real XGBoost models, Model Registry, operationalization*
+### Step 2: Run the ML Notebook (Required)
+
+Open and execute **all cells** in `notebooks/ML_Device_Failure_Prediction.ipynb`:
+
+| What It Does | Snowflake Feature |
+|--------------|-------------------|
+| Feature engineering (29 features) | SQL window functions |
+| Train XGBoost classifier | Snowpark ML |
+| Train XGBoost regressor | Snowpark ML |
+| Train Last Gasp classifier | Snowpark ML |
+| Log models to registry | Model Registry |
+| Create prediction views | MODEL!PREDICT() |
+
+### Step 3: Run Enhanced Capabilities
 
 ```sql
--- 1. Run base SQL scripts (01-05)
--- 01_create_database_and_data.sql
--- 02_create_semantic_views.sql
--- 03_create_cortex_search.sql
--- 04_create_agent.sql
--- 05_predictive_simulation.sql
-
--- 2. Run the ML notebook (creates real models!)
--- Open: notebooks/ML_Device_Failure_Prediction.ipynb
--- This trains XGBoost, logs to Model Registry, creates prediction views
-
--- 3. Run enhanced capabilities (skip 05b - notebook already created views)
--- 06_enhanced_capabilities.sql
+-- 06_enhanced_capabilities.sql       -- Batch commands, triage, impact analysis
 ```
 
-#### Option C: Maximum Training Data
-*Best for: Demonstrating ML on larger datasets*
+### Optional: Expand Training Data
 
 ```sql
--- After Option A or B, optionally run:
 -- 07_expanded_training_data.sql      -- 6 months of data (DESTRUCTIVE!)
--- Then re-run the notebook for better model training
+-- Then re-run the notebook for better model accuracy
 ```
 
 ### Step 2: Access via Snowflake Intelligence

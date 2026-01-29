@@ -15,15 +15,15 @@
  * 3. 03_create_cortex_search.sql        - Cortex Search services
  * 4. 04_create_agent.sql                - Agent definition
  * 5. 05_predictive_simulation.sql       - Prediction simulation
- * 5b. 05b_ml_prediction_views.sql       - ML prediction views (REQUIRED before 06!)
- * 6. 06_enhanced_capabilities.sql       - This file
+ * 6. ML_Device_Failure_Prediction.ipynb - Train XGBoost & create prediction views (REQUIRED!)
+ * 7. 06_enhanced_capabilities.sql       - This file
  * 
  * OPTIONAL (for more training data):
- * 7. 07_expanded_training_data.sql      - 6 months of data (destructive!)
- *    Then re-run 05b after 07.
+ * 8. 07_expanded_training_data.sql      - 6 months of data (destructive!)
+ *    Then re-run the ML notebook after 07.
  * 
- * Prerequisites: Run 01-05b scripts first. Script 05b creates the views
- * that this script depends on: V_ML_FAILURE_PREDICTIONS, V_DEVICE_ML_FEATURES
+ * Prerequisites: Run 01-05 scripts, then the ML notebook. The notebook creates
+ * the views this script depends on: V_ML_FAILURE_PREDICTIONS, V_DEVICE_ML_FEATURES
  ******************************************************************************/
 
 USE ROLE SF_INTELLIGENCE_DEMO;
