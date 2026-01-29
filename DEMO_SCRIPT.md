@@ -1627,6 +1627,10 @@ What training data do we have available for building ML models?
 ## 🛠️ Pre-Demo Checklist
 
 - [ ] SQL scripts 01-05 executed successfully
+- [ ] **ML notebook executed** (`notebooks/ML_Device_Failure_Prediction.ipynb`)
+  - [ ] XGBoost models trained and logged to registry
+  - [ ] `T_ML_PREDICTIONS` table populated
+- [ ] SQL script 06 executed (enhanced capabilities)
 - [ ] Agent created in Snowsight (AI & ML → Agents)
 - [ ] Semantic views added to agent
 - [ ] Cortex Search services added
