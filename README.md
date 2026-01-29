@@ -84,39 +84,48 @@ ai_agent_device_maintenance/
 - ACCOUNTADMIN role (for initial setup)
 - The demo uses the `SF_INTELLIGENCE_DEMO` role (created automatically)
 
-### Step 1: Run SQL Scripts
+### Step 1: Choose Your Demo Path
 
-Execute in order in Snowsight:
+#### Option A: Quick Demo (Rule-Based Predictions)
+*Best for: Quick setup, no notebook required*
 
 ```sql
--- CORE SETUP (Required)
--- ======================
--- 1. Create role, database, tables, and sample data
--- Run: setup/01_create_database_and_data.sql
+-- Run in Snowsight in order:
+-- 01_create_database_and_data.sql    -- Base tables
+-- 02_create_semantic_views.sql       -- Semantic views
+-- 03_create_cortex_search.sql        -- Search services
+-- 04_create_agent.sql                -- Agent definition
+-- 05_predictive_simulation.sql       -- Prediction simulation
+-- 05b_ml_prediction_views.sql        -- Rule-based prediction views
+-- 06_enhanced_capabilities.sql       -- Batch commands, triage
+```
 
--- 2. Create Snowflake Semantic Views
--- Run: setup/02_create_semantic_views.sql
+#### Option B: Full ML Demo (Recommended) ⭐
+*Best for: Showcasing real XGBoost models, Model Registry, operationalization*
 
--- 3. Create Cortex Search services
--- Run: setup/03_create_cortex_search.sql
+```sql
+-- 1. Run base SQL scripts (01-05)
+-- 01_create_database_and_data.sql
+-- 02_create_semantic_views.sql
+-- 03_create_cortex_search.sql
+-- 04_create_agent.sql
+-- 05_predictive_simulation.sql
 
--- 4. Create the agent
--- Run: setup/04_create_agent.sql
+-- 2. Run the ML notebook (creates real models!)
+-- Open: notebooks/ML_Device_Failure_Prediction.ipynb
+-- This trains XGBoost, logs to Model Registry, creates prediction views
 
--- 5. Create predictive failure detection views
--- Run: setup/05_predictive_simulation.sql
+-- 3. Run enhanced capabilities (skip 05b - notebook already created views)
+-- 06_enhanced_capabilities.sql
+```
 
--- 5b. Create ML prediction views (bridges 05 to 06)
--- Run: setup/05b_ml_prediction_views.sql
+#### Option C: Maximum Training Data
+*Best for: Demonstrating ML on larger datasets*
 
--- 6. Create enhanced capabilities (batch commands, triage, impact)
--- Run: setup/06_enhanced_capabilities.sql
-
--- OPTIONAL (for more training data - DESTRUCTIVE)
--- ================================================
--- 7. Expand training data to 6 months (replaces telemetry/maintenance data)
--- Run: setup/07_expanded_training_data.sql
--- Then re-run: setup/05b_ml_prediction_views.sql
+```sql
+-- After Option A or B, optionally run:
+-- 07_expanded_training_data.sql      -- 6 months of data (DESTRUCTIVE!)
+-- Then re-run the notebook for better model training
 ```
 
 ### Step 2: Access via Snowflake Intelligence
@@ -207,6 +216,55 @@ What's wrong with device DEV-003 and how do I fix it?
 | SendDeviceCommand | Custom Procedure | Remote device commands |
 | SendAlert | Custom Procedure | Slack/PagerDuty alerts |
 | CreateServiceNowIncident | Custom Procedure | Work order creation |
+
+---
+
+## 🤖 ML Model Showcase (Notebook)
+
+The Jupyter notebook `notebooks/ML_Device_Failure_Prediction.ipynb` is a **complete ML pipeline**:
+
+### Feature Engineering (29 Features)
+
+| Category | Features | Why They Matter |
+|----------|----------|-----------------|
+| **Current State** | CPU temp, usage, memory, errors | Snapshot of device health |
+| **24h Rolling Stats** | Averages, max, min over 24 hours | Smooths noise, captures sustained issues |
+| **7-day Baseline** | Longer-term averages | Establishes normal behavior |
+| **TREND Features** | CPU_TEMP_TREND, MEMORY_TREND, ERROR_ACCELERATION | **CRITICAL**: Degradation patterns predict failures |
+| **Device Attributes** | Age, days since maintenance, network type | Static risk factors |
+
+### XGBoost Models
+
+| Model | Type | Purpose | Metrics |
+|-------|------|---------|---------|
+| `DEVICE_FAILURE_CLASSIFIER` | Binary Classification | Will device fail in 48h? | Accuracy, F1, ROC-AUC |
+| `DEVICE_HOURS_TO_FAILURE` | Regression | Hours until failure | MAE, RMSE, R² |
+| `LAST_GASP_CLASSIFIER` | Multi-class | Why did device go offline? | Accuracy per cause |
+
+### Model Registry & Operationalization
+
+```python
+# Training (in notebook)
+clf_model = xgb.XGBClassifier(...)
+clf_model.fit(X_train, y_train)
+
+# Log to Snowflake Model Registry
+registry.log_model(clf_model, model_name="DEVICE_FAILURE_CLASSIFIER", ...)
+```
+
+```sql
+-- Inference (in SQL views)
+SELECT 
+    DEVICE_ID,
+    DEVICE_FAILURE_CLASSIFIER!PREDICT(
+        CPU_TEMP, CPU_USAGE, MEMORY_PCT, ...
+    ):output_feature_0 as WILL_FAIL_48H
+FROM V_DEVICE_ML_FEATURES
+```
+
+### Key Insight
+
+> *"TREND features (CPU_TEMP_TREND, ERROR_ACCELERATION) are the most predictive because they capture DEGRADATION patterns 24-48 hours before failure!"*
 
 ---
 

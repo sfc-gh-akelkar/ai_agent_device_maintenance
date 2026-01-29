@@ -1,15 +1,32 @@
 /*******************************************************************************
  * PREDICTIVE DEVICE MAINTENANCE DEMO
- * Part 5b: ML Prediction Views (Bridge between Training Data and Operations)
+ * Part 5b: ML Prediction Views - RULE-BASED FALLBACK
  * 
- * This script creates the missing prediction views that:
- * 1. Script 06 depends on (V_ML_FAILURE_PREDICTIONS, V_DEVICE_ML_FEATURES)
- * 2. The Agent depends on (SV_ML_PREDICTIONS)
+ * ⚠️  THIS IS A FALLBACK FOR DEMOS WITHOUT ML MODEL TRAINING
  * 
- * IMPORTANT: Run this AFTER 05_predictive_simulation.sql or 07_expanded_training_data.sql
- *            Run this BEFORE 06_enhanced_capabilities.sql
+ * For FULL ML-POWERED predictions:
+ *   Run the Jupyter notebook: notebooks/ML_Device_Failure_Prediction.ipynb
+ *   - Trains XGBoost models on historical data
+ *   - Logs models to Snowflake Model Registry
+ *   - Creates views with MODEL!PREDICT() for real inference
  * 
- * Prerequisites: 01, 02, 03, 04, and either 05 or 07
+ * This script creates RULE-BASED simulations that:
+ *   - Work without running the notebook
+ *   - Allow 06_enhanced_capabilities.sql to run
+ *   - Demonstrate the CONCEPT of predictions
+ *   - Use thresholds derived from failure patterns (NOT trained ML)
+ * 
+ * EXECUTION ORDER:
+ * ================
+ * Option A - Quick Demo (Rule-based):
+ *   01 → 02 → 03 → 04 → 05 → 05b → 06
+ * 
+ * Option B - Full ML Demo (Recommended):
+ *   01 → 02 → 03 → 04 → 05 → [Notebook] → 06
+ *   (Notebook creates real ML views, skip 05b)
+ * 
+ * The notebook creates the same views (V_DEVICE_ML_FEATURES, V_ML_FAILURE_PREDICTIONS,
+ * SV_ML_PREDICTIONS) but with actual XGBoost model inference via MODEL!PREDICT()
  ******************************************************************************/
 
 USE ROLE SF_INTELLIGENCE_DEMO;
