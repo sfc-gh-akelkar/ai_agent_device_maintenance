@@ -1,5 +1,5 @@
 /*******************************************************************************
- * PATIENTPOINT PREDICTIVE MAINTENANCE DEMO
+ * PREDICTIVE DEVICE MAINTENANCE DEMO
  * Part 1: Database, Schema, and Sample Data Setup
  * 
  * This script creates the foundation for the AI Agent demo:
@@ -20,7 +20,7 @@
 USE ROLE ACCOUNTADMIN;
 
 CREATE ROLE IF NOT EXISTS SF_INTELLIGENCE_DEMO
-    COMMENT = 'Role for PatientPoint Predictive Maintenance Demo with Snowflake Intelligence';
+    COMMENT = 'Role for Predictive Device Maintenance Demo with Snowflake Intelligence';
 
 -- Grant necessary account-level privileges
 GRANT CREATE DATABASE ON ACCOUNT TO ROLE SF_INTELLIGENCE_DEMO;
@@ -46,24 +46,24 @@ CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH
     AUTO_SUSPEND = 300
     AUTO_RESUME = TRUE
     INITIALLY_SUSPENDED = TRUE
-    COMMENT = 'Warehouse for PatientPoint demo';
+    COMMENT = 'Warehouse for Device Maintenance demo';
 
 USE WAREHOUSE COMPUTE_WH;
 
 -- ============================================================================
 -- DATABASE AND SCHEMA SETUP
 -- ============================================================================
-CREATE DATABASE IF NOT EXISTS PATIENTPOINT_MAINTENANCE;
+CREATE DATABASE IF NOT EXISTS DEVICE_MAINTENANCE;
 
 -- Grant ownership to the demo role
-GRANT OWNERSHIP ON DATABASE PATIENTPOINT_MAINTENANCE TO ROLE SF_INTELLIGENCE_DEMO COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON DATABASE DEVICE_MAINTENANCE TO ROLE SF_INTELLIGENCE_DEMO COPY CURRENT GRANTS;
 
-USE DATABASE PATIENTPOINT_MAINTENANCE;
+USE DATABASE DEVICE_MAINTENANCE;
 
 CREATE SCHEMA IF NOT EXISTS DEVICE_OPS;
 
 -- Grant ownership to the demo role
-GRANT OWNERSHIP ON SCHEMA PATIENTPOINT_MAINTENANCE.DEVICE_OPS TO ROLE SF_INTELLIGENCE_DEMO COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON SCHEMA DEVICE_MAINTENANCE.DEVICE_OPS TO ROLE SF_INTELLIGENCE_DEMO COPY CURRENT GRANTS;
 
 USE SCHEMA DEVICE_OPS;
 
@@ -85,7 +85,10 @@ CREATE OR REPLACE TABLE DEVICE_INVENTORY (
     STATUS VARCHAR(20) DEFAULT 'ONLINE',  -- ONLINE, OFFLINE, DEGRADED, MAINTENANCE
     -- Revenue tracking fields
     HOURLY_AD_REVENUE_USD FLOAT DEFAULT 12.50,  -- Advertising revenue per hour when online
-    MONTHLY_IMPRESSIONS INT DEFAULT 15000        -- Average monthly ad impressions
+    MONTHLY_IMPRESSIONS INT DEFAULT 15000,       -- Average monthly ad impressions
+    -- Network dependency fields (CRITICAL: 90%+ devices run on provider Wi-Fi)
+    NETWORK_TYPE VARCHAR(30) DEFAULT 'PROVIDER_WIFI',  -- PROVIDER_WIFI, COMPANY_MANAGED, CELLULAR
+    PROVIDER_OFFICE_ID VARCHAR(20)  -- Links to the provider office (30,000 offices total)
 );
 
 -- Insert sample device inventory (100 devices across various facilities)
@@ -161,10 +164,10 @@ SELECT
     -- DEMO-OPTIMIZED: Recent maintenance dates (within last 60 days)
     DATEADD('day', -1 * MOD(SEQ4() * 7, 60), CURRENT_DATE()),
     'v3.2.' || MOD(SEQ4(), 3)::VARCHAR,
-    -- DEMO-OPTIMIZED: 93% ONLINE, 5% DEGRADED, 2% OFFLINE for healthy fleet
+    -- REALISTIC: 85% ONLINE, 5% DEGRADED, 10% OFFLINE (matches industry reality)
     CASE 
-        WHEN MOD(SEQ4(), 50) = 0 THEN 'OFFLINE'
-        WHEN MOD(SEQ4(), 20) = 0 THEN 'DEGRADED'
+        WHEN MOD(SEQ4(), 10) = 0 THEN 'OFFLINE'  -- 10% offline (realistic rate)
+        WHEN MOD(SEQ4(), 15) = 0 THEN 'DEGRADED' -- ~5% degraded
         ELSE 'ONLINE'
     END,
     -- Revenue based on device model (Max > Pro > Lite)
@@ -178,7 +181,15 @@ SELECT
         WHEN 0 THEN 14000 + (MOD(SEQ4(), 5) * 500)   -- Pro 55: 14000-16000
         WHEN 1 THEN 9000 + (MOD(SEQ4(), 4) * 400)    -- Lite 32: 9000-10200
         ELSE 22000 + (MOD(SEQ4(), 6) * 600)          -- Max 65: 22000-25000
-    END
+    END,
+    -- Network type: 90% on provider Wi-Fi, 8% managed, 2% cellular
+    CASE 
+        WHEN MOD(SEQ4(), 50) = 0 THEN 'CELLULAR'
+        WHEN MOD(SEQ4(), 12) = 0 THEN 'COMPANY_MANAGED'
+        ELSE 'PROVIDER_WIFI'
+    END,
+    -- Provider office ID (simulates 30,000 offices with ~5 devices each)
+    'OFFICE-' || LPAD(MOD(SEQ4() + 31, 100)::VARCHAR, 5, '0')
 FROM TABLE(GENERATOR(ROWCOUNT => 70));
 
 -- Normalize all LAST_MAINTENANCE_DATE values to be relative to current date
@@ -210,14 +221,17 @@ CREATE OR REPLACE TABLE DEVICE_TELEMETRY (
     UPTIME_HOURS FLOAT,
     ERROR_COUNT INT,
     LAST_HEARTBEAT TIMESTAMP_NTZ,
+    -- Wi-Fi signal tracking (CRITICAL for "last gasp" analysis)
+    WIFI_SIGNAL_STRENGTH INT DEFAULT -50,  -- dBm: -30 (excellent) to -90 (poor)
+    CONNECTION_TYPE VARCHAR(20) DEFAULT 'WIFI',  -- WIFI, ETHERNET, CELLULAR
     CONSTRAINT fk_device FOREIGN KEY (DEVICE_ID) REFERENCES DEVICE_INVENTORY(DEVICE_ID)
 );
 
 -- Generate telemetry data for the past 30 days
--- DEMO-OPTIMIZED: Healthy fleet with a few devices showing predictable warning signs
+-- REALISTIC: Fleet with 10% offline devices showing varied failure patterns
 INSERT INTO DEVICE_TELEMETRY (DEVICE_ID, TIMESTAMP, CPU_TEMP_CELSIUS, CPU_USAGE_PCT, MEMORY_USAGE_PCT, 
                                DISK_USAGE_PCT, NETWORK_LATENCY_MS, DISPLAY_BRIGHTNESS_PCT, 
-                               UPTIME_HOURS, ERROR_COUNT, LAST_HEARTBEAT)
+                               UPTIME_HOURS, ERROR_COUNT, LAST_HEARTBEAT, WIFI_SIGNAL_STRENGTH, CONNECTION_TYPE)
 SELECT 
     d.DEVICE_ID,
     DATEADD('hour', -1 * t.SEQ, CURRENT_TIMESTAMP()) as TIMESTAMP,
@@ -255,7 +269,15 @@ SELECT
         WHEN d.STATUS = 'OFFLINE' THEN FLOOR((RANDOM() / POW(10, 18)) * 8) + 5
         ELSE FLOOR((RANDOM() / POW(10, 18)) * 2)
     END as ERROR_COUNT,
-    DATEADD('minute', -1 * FLOOR((RANDOM() / POW(10, 18)) * 2), DATEADD('hour', -1 * t.SEQ, CURRENT_TIMESTAMP())) as LAST_HEARTBEAT
+    DATEADD('minute', -1 * FLOOR((RANDOM() / POW(10, 18)) * 2), DATEADD('hour', -1 * t.SEQ, CURRENT_TIMESTAMP())) as LAST_HEARTBEAT,
+    -- Wi-Fi signal strength: healthy -45 to -60, degraded -65 to -75, offline sudden drop to -85
+    CASE 
+        WHEN d.STATUS = 'OFFLINE' THEN -85 + FLOOR((RANDOM() / POW(10, 18)) * 10)  -- Poor signal before going offline
+        WHEN d.STATUS = 'DEGRADED' THEN -65 + FLOOR((RANDOM() / POW(10, 18)) * 15)
+        ELSE -45 + FLOOR((RANDOM() / POW(10, 18)) * 15)  -- Good signal
+    END as WIFI_SIGNAL_STRENGTH,
+    -- Connection type based on device network type (most are WIFI)
+    CASE WHEN d.NETWORK_TYPE = 'CELLULAR' THEN 'CELLULAR' ELSE 'WIFI' END as CONNECTION_TYPE
 FROM DEVICE_INVENTORY d
 CROSS JOIN (SELECT SEQ4() as SEQ FROM TABLE(GENERATOR(ROWCOUNT => 720))) t  -- 30 days * 24 hours
 WHERE t.SEQ < 720;
@@ -469,6 +491,65 @@ UNION ALL
 SELECT 'DEV-014', DATEADD('hour', 8, DATEADD('day', -43, CURRENT_TIMESTAMP())), DATEADD('hour', 9, DATEADD('day', -43, CURRENT_TIMESTAMP())), 1.25, 'SOFTWARE_ISSUE', NULL, 15.63, 25
 UNION ALL
 SELECT 'DEV-003', DATEADD('hour', 14, DATEADD('day', -27, CURRENT_TIMESTAMP())), DATEADD('hour', 15, DATEADD('day', -27, CURRENT_TIMESTAMP())), 1.5, 'SOFTWARE_ISSUE', NULL, 18.75, 30;
+
+-- ============================================================================
+-- DEVICE LAST GASP TABLE (NEW: "Last Gasp" telemetry capture)
+-- Captures final device readings before going offline to classify failure cause
+-- CRITICAL: This enables distinguishing Wi-Fi password changes from hardware failures
+-- ============================================================================
+CREATE OR REPLACE TABLE DEVICE_LAST_GASP (
+    LAST_GASP_ID VARCHAR(36) DEFAULT UUID_STRING() PRIMARY KEY,
+    DEVICE_ID VARCHAR(20),
+    OFFLINE_TIMESTAMP TIMESTAMP_NTZ,
+    -- Final readings before device went silent
+    LAST_SIGNAL_STRENGTH INT,           -- Wi-Fi dBm: -30 excellent, -90 poor
+    LAST_CPU_TEMP FLOAT,
+    LAST_MEMORY_PCT FLOAT,
+    LAST_ERROR_COUNT INT,
+    -- Signal analysis
+    SIGNAL_TREND VARCHAR(20),           -- SUDDEN_DROP, GRADUAL_DECLINE, STABLE
+    SIGNAL_DROP_RATE FLOAT,             -- dBm/minute before going offline
+    -- Failure classification (ML/rule-based)
+    CLASSIFIED_CAUSE VARCHAR(50),       -- WIFI_PASSWORD_CHANGE, HARDWARE_FAILURE, NETWORK_OUTAGE, POWER_LOSS
+    CLASSIFICATION_CONFIDENCE FLOAT,    -- 0.0 to 1.0
+    CLASSIFICATION_REASON TEXT,         -- Human-readable explanation
+    -- Resolution tracking
+    RESOLVED_TIMESTAMP TIMESTAMP_NTZ,
+    ACTUAL_CAUSE VARCHAR(50),           -- Confirmed cause after resolution
+    RESOLUTION_ACTION VARCHAR(100),     -- What fixed it: CALL_OFFICE, DISPATCH_TECH, REMOTE_RESTART
+    CONSTRAINT fk_last_gasp_device FOREIGN KEY (DEVICE_ID) REFERENCES DEVICE_INVENTORY(DEVICE_ID)
+);
+
+-- Insert sample "last gasp" data for offline devices
+-- This demonstrates failure classification based on telemetry patterns
+INSERT INTO DEVICE_LAST_GASP (DEVICE_ID, OFFLINE_TIMESTAMP, LAST_SIGNAL_STRENGTH, LAST_CPU_TEMP, 
+    LAST_MEMORY_PCT, LAST_ERROR_COUNT, SIGNAL_TREND, SIGNAL_DROP_RATE,
+    CLASSIFIED_CAUSE, CLASSIFICATION_CONFIDENCE, CLASSIFICATION_REASON,
+    RESOLVED_TIMESTAMP, ACTUAL_CAUSE, RESOLUTION_ACTION)
+-- Wi-Fi password change pattern: Sudden signal drop, otherwise healthy metrics
+SELECT 'DEV-025', DATEADD('hour', -18, CURRENT_TIMESTAMP()), -88, 52.3, 45.2, 0, 'SUDDEN_DROP', 15.5,
+    'WIFI_PASSWORD_CHANGE', 0.92, 'Signal dropped suddenly from -45 to -88 dBm in <2 mins. CPU/memory normal. Pattern matches credential rotation.',
+    NULL, NULL, NULL
+UNION ALL
+-- Hardware failure pattern: Gradual degradation, high temps, errors
+SELECT 'DEV-031', DATEADD('hour', -36, CURRENT_TIMESTAMP()), -52, 78.5, 88.3, 47, 'STABLE', 0.2,
+    'HARDWARE_FAILURE', 0.87, 'High CPU temp (78C), memory at 88%, 47 errors logged. Signal was stable. Thermal/component failure suspected.',
+    NULL, NULL, NULL
+UNION ALL
+-- Network outage pattern: Multiple devices in same office went down together
+SELECT 'DEV-081', DATEADD('hour', -72, CURRENT_TIMESTAMP()), -91, 55.1, 52.4, 3, 'GRADUAL_DECLINE', 2.1,
+    'NETWORK_OUTAGE', 0.78, 'Signal declined gradually over 30 mins. Other devices in same office also offline. Provider network issue likely.',
+    NULL, NULL, NULL
+UNION ALL
+-- Resolved: Wi-Fi password change - fixed by calling office
+SELECT 'DEV-017', DATEADD('hour', -168, CURRENT_TIMESTAMP()), -85, 51.2, 42.1, 0, 'SUDDEN_DROP', 18.2,
+    'WIFI_PASSWORD_CHANGE', 0.95, 'Sudden signal loss, healthy metrics. Classic password rotation pattern.',
+    DATEADD('hour', -166, CURRENT_TIMESTAMP()), 'WIFI_PASSWORD_CHANGE', 'CALL_OFFICE'
+UNION ALL
+-- Resolved: Power loss - fixed by remote restart after power restored
+SELECT 'DEV-042', DATEADD('hour', -120, CURRENT_TIMESTAMP()), -48, 49.8, 38.5, 0, 'STABLE', 0.0,
+    'POWER_LOSS', 0.89, 'All metrics normal, signal stable, then instant disconnect. No degradation pattern. Power event suspected.',
+    DATEADD('hour', -116, CURRENT_TIMESTAMP()), 'POWER_LOSS', 'REMOTE_RESTART';
 
 -- ============================================================================
 -- ACTIVE DOWNTIME TABLE
@@ -696,12 +777,12 @@ CREATE OR REPLACE TABLE TECHNICIANS (
 -- Insert sample technicians
 -- Note: Using SELECT with UNION ALL because VALUES clause doesn't support ARRAY_CONSTRUCT
 INSERT INTO TECHNICIANS 
-SELECT 'TECH-001', 'Marcus Johnson', 'marcus.johnson@patientpoint.com', '312-555-0101', 'Midwest', ARRAY_CONSTRUCT('IL', 'WI'), 'Hardware', 'Lead', 'AVAILABLE', 'Chicago, IL', 4.8, 156
-UNION ALL SELECT 'TECH-002', 'Sarah Chen', 'sarah.chen@patientpoint.com', '312-555-0102', 'Midwest', ARRAY_CONSTRUCT('IL', 'IN'), 'Software', 'Senior', 'DISPATCHED', 'Indianapolis, IN', 4.9, 142
-UNION ALL SELECT 'TECH-003', 'David Martinez', 'david.martinez@patientpoint.com', '614-555-0103', 'Midwest', ARRAY_CONSTRUCT('OH', 'MI'), 'Hardware', 'Senior', 'AVAILABLE', 'Columbus, OH', 4.7, 128
-UNION ALL SELECT 'TECH-004', 'Emily Williams', 'emily.williams@patientpoint.com', '313-555-0104', 'Midwest', ARRAY_CONSTRUCT('MI', 'OH'), 'Network', 'Senior', 'ON_CALL', 'Detroit, MI', 4.6, 98
-UNION ALL SELECT 'TECH-005', 'James Thompson', 'james.thompson@patientpoint.com', '414-555-0105', 'Midwest', ARRAY_CONSTRUCT('WI', 'MN'), 'Hardware', 'Junior', 'AVAILABLE', 'Milwaukee, WI', 4.4, 45
-UNION ALL SELECT 'TECH-006', 'Lisa Anderson', 'lisa.anderson@patientpoint.com', '612-555-0106', 'Midwest', ARRAY_CONSTRUCT('MN', 'WI'), 'Software', 'Lead', 'AVAILABLE', 'Minneapolis, MN', 4.9, 189;
+SELECT 'TECH-001', 'Marcus Johnson', 'marcus.johnson@deviceops.example.com', '312-555-0101', 'Midwest', ARRAY_CONSTRUCT('IL', 'WI'), 'Hardware', 'Lead', 'AVAILABLE', 'Chicago, IL', 4.8, 156
+UNION ALL SELECT 'TECH-002', 'Sarah Chen', 'sarah.chen@deviceops.example.com', '312-555-0102', 'Midwest', ARRAY_CONSTRUCT('IL', 'IN'), 'Software', 'Senior', 'DISPATCHED', 'Indianapolis, IN', 4.9, 142
+UNION ALL SELECT 'TECH-003', 'David Martinez', 'david.martinez@deviceops.example.com', '614-555-0103', 'Midwest', ARRAY_CONSTRUCT('OH', 'MI'), 'Hardware', 'Senior', 'AVAILABLE', 'Columbus, OH', 4.7, 128
+UNION ALL SELECT 'TECH-004', 'Emily Williams', 'emily.williams@deviceops.example.com', '313-555-0104', 'Midwest', ARRAY_CONSTRUCT('MI', 'OH'), 'Network', 'Senior', 'ON_CALL', 'Detroit, MI', 4.6, 98
+UNION ALL SELECT 'TECH-005', 'James Thompson', 'james.thompson@deviceops.example.com', '414-555-0105', 'Midwest', ARRAY_CONSTRUCT('WI', 'MN'), 'Hardware', 'Junior', 'AVAILABLE', 'Milwaukee, WI', 4.4, 45
+UNION ALL SELECT 'TECH-006', 'Lisa Anderson', 'lisa.anderson@deviceops.example.com', '612-555-0106', 'Midwest', ARRAY_CONSTRUCT('MN', 'WI'), 'Software', 'Lead', 'AVAILABLE', 'Minneapolis, MN', 4.9, 189;
 
 -- ============================================================================
 -- WORK ORDERS TABLE
@@ -1178,11 +1259,11 @@ BEGIN
     )
     SELECT 
         'DEVICE_COMMAND',
-        'PatientPoint Device Management API',
+        'Device Management API',
         :DEVICE_ID,
         :COMMAND,
         OBJECT_CONSTRUCT(
-            'api_endpoint', 'https://api.patientpoint.com/v1/devices/' || :DEVICE_ID || '/command',
+            'api_endpoint', 'https://api.deviceops.example.com/v1/devices/' || :DEVICE_ID || '/command',
             'method', 'POST',
             'headers', OBJECT_CONSTRUCT('Authorization', 'Bearer ***', 'Content-Type', 'application/json'),
             'body', OBJECT_CONSTRUCT(
@@ -1204,7 +1285,7 @@ BEGIN
         'device_id', :DEVICE_ID,
         'command', :COMMAND,
         'reason', :REASON,
-        'api_endpoint', 'https://api.patientpoint.com/v1/devices/' || :DEVICE_ID || '/command',
+        'api_endpoint', 'https://api.deviceops.example.com/v1/devices/' || :DEVICE_ID || '/command',
         'note', 'To implement in production: Create External Function connected to Device Management API'
     );
     
@@ -1281,7 +1362,7 @@ BEGIN
         'CREATE_INCIDENT',
         OBJECT_CONSTRUCT(
             'incident_number', :incident_number,
-            'api_endpoint', 'https://patientpoint.service-now.com/api/now/table/incident',
+            'api_endpoint', 'https://deviceops.service-now.com/api/now/table/incident',
             'method', 'POST',
             'body', OBJECT_CONSTRUCT(
                 'short_description', 'Device ' || :DEVICE_ID || ' requires attention',
@@ -1326,8 +1407,8 @@ LIMIT 20;
 
 -- Insert some sample historical actions to show the pattern
 INSERT INTO EXTERNAL_ACTION_LOG (TIMESTAMP, ACTION_TYPE, TARGET_SYSTEM, TARGET_DEVICE_ID, COMMAND, PAYLOAD, STATUS, INITIATED_BY, NOTES)
-SELECT DATEADD('hour', -2, CURRENT_TIMESTAMP()), 'DEVICE_COMMAND', 'PatientPoint Device Management API', 'DEV-003', 'RESTART_SERVICES', 
-    PARSE_JSON('{"api_endpoint": "https://api.patientpoint.com/v1/devices/DEV-003/command", "command": "RESTART_SERVICES"}'),
+SELECT DATEADD('hour', -2, CURRENT_TIMESTAMP()), 'DEVICE_COMMAND', 'Device Management API', 'DEV-003', 'RESTART_SERVICES', 
+    PARSE_JSON('{"api_endpoint": "https://api.deviceops.example.com/v1/devices/DEV-003/command", "command": "RESTART_SERVICES"}'),
     'SIMULATED', 'AI_AGENT', 'High CPU detected - AI agent initiated remote restart'
 UNION ALL
 SELECT DATEADD('hour', -1, CURRENT_TIMESTAMP()), 'ALERT', 'Slack', 'DEV-005', 'SEND_NOTIFICATION',

@@ -1,6 +1,6 @@
 # 🏗️ Predictive Maintenance Architecture Overview
 
-**For: PatientPoint Executive Presentation**
+**For: Executive Presentation**
 
 ---
 
@@ -151,7 +151,7 @@
 
 ---
 
-## ❓ Discussion Points for PatientPoint
+## ❓ Discussion Points
 
 1. **Data Sources**: What IoT platform manages your 500K devices?
 2. **Integration**: Do you have APIs for remote device commands?

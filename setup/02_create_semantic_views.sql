@@ -1,5 +1,5 @@
 /*******************************************************************************
- * PATIENTPOINT PREDICTIVE MAINTENANCE DEMO
+ * PREDICTIVE DEVICE MAINTENANCE DEMO
  * Part 2: Snowflake Semantic Views for Cortex Analyst
  * 
  * Creates native Snowflake Semantic Views for natural language queries
@@ -13,7 +13,7 @@
 -- ============================================================================
 USE ROLE SF_INTELLIGENCE_DEMO;
 USE WAREHOUSE COMPUTE_WH;
-USE DATABASE PATIENTPOINT_MAINTENANCE;
+USE DATABASE DEVICE_MAINTENANCE;
 USE SCHEMA DEVICE_OPS;
 
 -- ============================================================================
@@ -480,7 +480,7 @@ CREATE OR REPLACE SEMANTIC VIEW SV_ROI_ANALYSIS
     
     roi.production_device_count AS roi.PRODUCTION_DEVICE_COUNT
       WITH SYNONYMS = ('production devices', 'total devices', 'fleet size')
-      COMMENT = 'Number of devices in production (500,000)'
+      COMMENT = 'Number of devices in production (150,000 across 30,000 offices)'
   )
   METRICS (
     roi.avg_field_dispatch_cost AS MAX(roi.AVG_FIELD_DISPATCH_COST_USD)
@@ -497,11 +497,11 @@ CREATE OR REPLACE SEMANTIC VIEW SV_ROI_ANALYSIS
     
     roi.annual_dispatch_cost AS MAX(roi.PRODUCTION_ANNUAL_DISPATCH_COST_USD)
       WITH SYNONYMS = ('annual cost', 'yearly dispatch cost', 'current annual cost')
-      COMMENT = 'Projected annual field dispatch cost at production scale ($185M)',
+      COMMENT = 'Projected annual field dispatch cost at production scale (~$55M for 150K devices)',
     
     roi.annual_savings AS MAX(roi.PROJECTED_ANNUAL_SAVINGS_USD)
       WITH SYNONYMS = ('annual savings', 'yearly savings', 'projected savings', 'cost reduction')
-      COMMENT = 'Projected annual savings from remote fixes (~$96M)',
+      COMMENT = 'Projected annual savings from remote fixes (~$29M for 150K devices)',
     
     roi.savings_to_date AS MAX(roi.ACTUAL_SAVINGS_TO_DATE_USD)
       WITH SYNONYMS = ('savings to date', 'current savings', 'achieved savings')
@@ -645,4 +645,84 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CURRENT_DOWNTIME
   COMMENT = 'Current active downtime for offline devices. Shows how long devices have been down and the revenue being lost RIGHT NOW. Use this to answer questions about current offline devices and their business impact.';
 
 GRANT SELECT ON SEMANTIC VIEW SV_CURRENT_DOWNTIME TO ROLE SF_INTELLIGENCE_DEMO;
+
+-- ============================================================================
+-- LAST GASP ANALYSIS SEMANTIC VIEW (NEW)
+-- Analyzes device failure patterns from "last gasp" telemetry
+-- CRITICAL: Enables classifying Wi-Fi password changes vs hardware failures
+-- ============================================================================
+
+CREATE OR REPLACE SEMANTIC VIEW SV_LAST_GASP_ANALYSIS
+  TABLES (
+    last_gasp AS DEVICE_LAST_GASP PRIMARY KEY (LAST_GASP_ID)
+  )
+  DIMENSIONS (
+    last_gasp.device_id AS last_gasp.DEVICE_ID
+      WITH SYNONYMS = ('device', 'screen', 'unit')
+      COMMENT = 'Device that went offline',
+    
+    last_gasp.offline_timestamp AS last_gasp.OFFLINE_TIMESTAMP
+      WITH SYNONYMS = ('went offline', 'down since', 'offline time')
+      COMMENT = 'When the device went offline',
+    
+    last_gasp.signal_trend AS last_gasp.SIGNAL_TREND
+      WITH SYNONYMS = ('pattern', 'signal pattern')
+      COMMENT = 'Signal trend before going offline: SUDDEN_DROP, GRADUAL_DECLINE, STABLE',
+    
+    last_gasp.classified_cause AS last_gasp.CLASSIFIED_CAUSE
+      WITH SYNONYMS = ('cause', 'failure cause', 'reason', 'classification')
+      COMMENT = 'AI-classified cause: WIFI_PASSWORD_CHANGE, HARDWARE_FAILURE, NETWORK_OUTAGE, POWER_LOSS',
+    
+    last_gasp.classification_reason AS last_gasp.CLASSIFICATION_REASON
+      WITH SYNONYMS = ('reason', 'explanation', 'why')
+      COMMENT = 'Human-readable explanation of the classification',
+    
+    last_gasp.actual_cause AS last_gasp.ACTUAL_CAUSE
+      WITH SYNONYMS = ('confirmed cause', 'real cause', 'verified cause')
+      COMMENT = 'Confirmed cause after resolution (for resolved incidents)',
+    
+    last_gasp.resolution_action AS last_gasp.RESOLUTION_ACTION
+      WITH SYNONYMS = ('fix', 'action taken', 'resolution')
+      COMMENT = 'Action that resolved the issue: CALL_OFFICE, DISPATCH_TECH, REMOTE_RESTART'
+  )
+  METRICS (
+    last_gasp.total_incidents AS COUNT(DISTINCT last_gasp.LAST_GASP_ID)
+      WITH SYNONYMS = ('count', 'how many', 'incidents')
+      COMMENT = 'Total number of offline incidents with last gasp data',
+    
+    last_gasp.wifi_password_changes AS SUM(CASE WHEN last_gasp.CLASSIFIED_CAUSE = 'WIFI_PASSWORD_CHANGE' THEN 1 ELSE 0 END)
+      WITH SYNONYMS = ('password issues', 'wifi changes', 'credential changes')
+      COMMENT = 'Incidents classified as Wi-Fi password changes',
+    
+    last_gasp.hardware_failures AS SUM(CASE WHEN last_gasp.CLASSIFIED_CAUSE = 'HARDWARE_FAILURE' THEN 1 ELSE 0 END)
+      WITH SYNONYMS = ('hardware issues', 'device failures')
+      COMMENT = 'Incidents classified as hardware failures',
+    
+    last_gasp.network_outages AS SUM(CASE WHEN last_gasp.CLASSIFIED_CAUSE = 'NETWORK_OUTAGE' THEN 1 ELSE 0 END)
+      WITH SYNONYMS = ('network issues', 'provider outages')
+      COMMENT = 'Incidents classified as network outages',
+    
+    last_gasp.power_losses AS SUM(CASE WHEN last_gasp.CLASSIFIED_CAUSE = 'POWER_LOSS' THEN 1 ELSE 0 END)
+      WITH SYNONYMS = ('power issues', 'power outages')
+      COMMENT = 'Incidents classified as power loss',
+    
+    last_gasp.avg_confidence AS ROUND(AVG(last_gasp.CLASSIFICATION_CONFIDENCE), 2)
+      WITH SYNONYMS = ('accuracy', 'confidence level')
+      COMMENT = 'Average classification confidence score (0-1)',
+    
+    last_gasp.avg_signal_strength AS ROUND(AVG(last_gasp.LAST_SIGNAL_STRENGTH), 0)
+      WITH SYNONYMS = ('signal', 'wifi signal', 'signal level')
+      COMMENT = 'Average last signal strength before going offline (dBm)',
+    
+    last_gasp.resolved_count AS SUM(CASE WHEN last_gasp.RESOLVED_TIMESTAMP IS NOT NULL THEN 1 ELSE 0 END)
+      WITH SYNONYMS = ('fixed', 'resolved')
+      COMMENT = 'Number of incidents that have been resolved',
+    
+    last_gasp.unresolved_count AS SUM(CASE WHEN last_gasp.RESOLVED_TIMESTAMP IS NULL THEN 1 ELSE 0 END)
+      WITH SYNONYMS = ('open', 'pending', 'unresolved')
+      COMMENT = 'Number of incidents still unresolved'
+  )
+  COMMENT = 'Last gasp telemetry analysis for failure classification. Distinguishes Wi-Fi password changes from hardware failures based on final device readings. CRITICAL for 90%+ of devices on provider Wi-Fi.';
+
+GRANT SELECT ON SEMANTIC VIEW SV_LAST_GASP_ANALYSIS TO ROLE SF_INTELLIGENCE_DEMO;
 

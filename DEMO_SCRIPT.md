@@ -1,26 +1,41 @@
-# 🎬 PatientPoint Predictive Maintenance Demo Script
+# Predictive Device Maintenance Demo Script
 
 **Duration:** 20 minutes  
-**Audience:** PatientPoint IT Leadership, Operations, Field Services  
+**Audience:** IT Leadership, Operations, Field Services  
 **Platform:** Snowflake Intelligence + Cortex Agents
 
 ---
 
-## 🎯 FOCUS Framework Alignment
+## FOCUS Framework Alignment
 
 | CHALLENGE | ACTION | RESULT |
 |-----------|--------|--------|
-| 💸 Lost Advertising Revenue | 🤖 AI Agent Implementation | 💵 Revenue Protection |
-| 💰 High Operational Costs | 🔧 Automated Remote Resolution | 📉 40-60% Cost Reduction |
-| ⏰ Unexpected Downtime | 🧠 AI/ML Predictive Models | 🎯 >85% Predictive Accuracy |
+| Lost Advertising Revenue | AI Agent Implementation | Revenue Protection |
+| High Operational Costs | Automated Remote Resolution | 40-60% Cost Reduction |
+| 10%+ Device Offline Rate | AI/ML Predictive Models + Last Gasp Analysis | Target: 95% Uptime (Phase 1) |
+| Wi-Fi Dependency (90%+) | Failure Classification | Smart Triage: Call Office vs Dispatch |
 
 ---
 
-## 📡 Source Systems Being Simulated
+## KEY CONTEXT: Network Reality
+
+> **CRITICAL CONTEXT (SAY THIS EARLY):** *"The company has 150,000 devices across 30,000 provider offices. Here's the challenge: 90%+ of these devices run on the PROVIDER'S Wi-Fi—not company-managed networks. When a device goes offline, the #1 cause is the provider changed their Wi-Fi password. This changes everything about how we triage and resolve issues."*
+
+| Reality | Implication | Demo Feature |
+|---------|-------------|-------------|
+| 150K devices, 30K offices | ~5 devices per office avg | Realistic scale projections |
+| 90%+ on provider Wi-Fi | No network control | Last gasp analysis for classification |
+| 10%+ offline rate (~15K devices) | Major revenue impact | This is the problem we're solving |
+| Target: 95% uptime (Phase 1) | Up from ~90% | Achievable, not aspirational |
+| 7-8% provider churn | Device issues → lost contracts | Business case for reliability |
+
+---
+
+## Source Systems Being Simulated
 
 > **SAY THIS at demo start:** *"Before we begin, let me briefly explain what we're simulating. These are the source systems that would connect to Snowflake in production:"*
 
-| Source System | What We Simulate | Demo Data | PatientPoint Equivalent |
+| Source System | What We Simulate | Demo Data | Production Equivalent |
 |---------------|------------------|-----------|------------------------|
 | **IoT Platform** (AWS IoT, Azure IoT, Particle) | Device inventory, telemetry, heartbeat | `DEVICE_INVENTORY`, `DEVICE_TELEMETRY` | Your device management platform |
 | **Ad Platform** (Google Ad Manager, direct contracts) | CPM rates, impressions, revenue | `HOURLY_AD_REVENUE_USD` column | GAM or pharma partner data |
@@ -30,15 +45,16 @@
 | **HR/Scheduling** | Technician roster, skills, coverage | `TECHNICIANS` | Your workforce system |
 | **Device Management API** | Remote commands (reboot, restart) | `SEND_DEVICE_COMMAND` procedure | Your device API |
 | **Alerting** (Slack, PagerDuty) | Notifications, escalations | `SEND_ALERT` procedure | Your notification system |
+| **Last Gasp Telemetry** (NEW) | Final readings before offline | `DEVICE_LAST_GASP` | Wi-Fi signal, failure classification |
 
 ---
 
-## 👔 PatientPoint Attendee Mapping: Who Cares About What
+## Attendee Mapping: Who Cares About What
 
 | Attendee | Role | Primary Questions They Care About | Key Metrics | Prompts to Highlight |
 |----------|------|-----------------------------------|-------------|---------------------|
-| **Mike Walsh** | COO | "What's the operational impact? ROI?" | $96M savings, 52% cost reduction | Q1, Q3, Q4 |
-| **Patrick Arnold** | CTO | "Does this scale? Architecture?" | 500K devices, governance, Snowflake native | Q1, Q9 (automated action) |
+| **Mike Walsh** | COO | "What's the operational impact? ROI?" | $29M savings, 52% cost reduction | Q1, Q3, Q4 |
+| **Patrick Arnold** | CTO | "Does this scale? Architecture?" | 150K devices, governance, Snowflake native | Q1, Q9 (automated action) |
 | **Sharon Patent** | CADO | "Data strategy? Governance?" | Data lineage, audit trail, RBAC | All (emphasize auditability) |
 | **Jonathan Richman** | SVP Software & Engineering | "Integration complexity? Build effort?" | Source systems, APIs, implementation | Q9, Architecture diagram |
 | **Liberty Holt** | VP Data & Analytics | "Is the data trustworthy? Models accurate?" | Prediction accuracy, SQL verification | Q1, Q8 (prediction accuracy) |
@@ -83,21 +99,21 @@
 > **Use these talking points throughout the demo to frame the "how would we do this" conversation:**
 
 ### Data Acquisition
-| Question to Ask PatientPoint | Why It Matters |
+| Question to Ask | Why It Matters |
 |------------------------------|----------------|
 | "Where does your device telemetry live today?" | Determines ingestion method (Snowpipe, Kafka, batch) |
 | "How frequently is data collected?" | Affects prediction accuracy and cost |
 | "Who owns the ad revenue data?" | May require cross-team coordination |
 
 ### Data Governance
-| Question to Ask PatientPoint | Why It Matters |
+| Question to Ask | Why It Matters |
 |------------------------------|----------------|
 | "Who should have access to revenue data?" | RBAC configuration |
 | "Are there HIPAA considerations?" | Data masking, row-level security |
 | "What audit requirements exist?" | Logging, compliance reporting |
 
 ### Data Hygiene
-| Question to Ask PatientPoint | Why It Matters |
+| Question to Ask | Why It Matters |
 |------------------------------|----------------|
 | "How complete is your device inventory?" | Missing devices = blind spots |
 | "Are telemetry values consistent across device types?" | May need normalization |
@@ -122,7 +138,7 @@ This demo tells a **cohesive story** through 4 personas, with each question flow
 
 > **These are the core questions we validated. Each one is designed to demonstrate a specific business outcome.**
 
-| # | Question | Business Outcome | PatientPoint Attendees Who Care |
+| # | Question | Business Outcome | Attendees Who Care |
 |---|----------|------------------|--------------------------------|
 | **Q1** | "Give me a summary of our device fleet health and business impact" | Single pane of glass | Mike Walsh (COO), Patrick Arnold (CTO), Liberty Holt |
 | **Q2** | "How much advertising revenue are we losing from device downtime?" | Revenue protection | Mike Walsh (COO), JT Grant (VP Ad Tech), Chloé Varennes |
@@ -130,6 +146,7 @@ This demo tells a **cohesive story** through 4 personas, with each question flow
 | **Q4** | "How much have we saved this month from remote fixes?" | Proof of value | Mike Walsh (COO), Jonathan Richman, Liberty Holt |
 | **Q5** | "What is our customer satisfaction score?" | Retention risk | Mike Walsh (COO), Chloé Varennes |
 | **Q6** | "Which devices have critical or high risk levels?" | Actionable intelligence | Jonathan Richman, Jennifer Kelly |
+| **Q6b** | "Why did device DEV-025 go offline? Is it a Wi-Fi password change?" | **NEW: Failure classification** | All (key differentiator) |
 | **Q7** | "Can any of these be fixed remotely?" | Cost optimization | Jonathan Richman, Jennifer Kelly |
 | **Q8** | "Which devices are predicted to fail in 48 hours?" | Proactive maintenance | Drew Amwoza, Liberty Holt, Patrick Arnold |
 | **Q9** | "Attempt a remote restart on device DEV-003" | Closed-loop operations | Patrick Arnold (CTO), Sharon Patent (CADO), Drew Amwoza |
@@ -138,10 +155,11 @@ This demo tells a **cohesive story** through 4 personas, with each question flow
 
 | Question | Key Numbers to Expect | Watch Out For |
 |----------|----------------------|---------------|
-| **Q1** | Health: 71/100, 92 online, 5 degraded, 3 offline, 94.5% uptime | 67% MEDIUM risk is normal |
-| **Q2** | ~$51K revenue at risk, 8 devices affected, Cleveland pattern | Explain historical vs current |
-| **Q3** | $185M annual cost, $96M savings, 52% reduction, 4:1 ROI | Validate $185/dispatch assumption |
+| **Q1** | Health: 71/100, 85 online, 5 degraded, 10 offline (10%), ~90% uptime | 10% offline is the PROBLEM we're solving |
+| **Q2** | ~$51K revenue at risk, 10+ devices affected | Explain this is why Phase 1 targets 95% |
+| **Q3** | $55M annual cost (150K devices), $29M savings, 52% reduction | Scaled to 150K, not 500K |
 | **Q4** | $1,200-1,500 saved this month, 60-70% remote rate | Monthly data may vary |
+| **Q6b** | Wi-Fi password change: 92% confidence, SUDDEN_DROP pattern | **KEY DEMO MOMENT** |
 | **Q9** | Action logged with timestamp, device ID, command | Show audit trail after |
 
 ---
@@ -151,13 +169,13 @@ This demo tells a **cohesive story** through 4 personas, with each question flow
 ### Setting the Stage
 
 **SAY THIS:**
-> "PatientPoint operates 500,000 IoT devices—HealthScreen displays—across hospitals and clinics nationwide. These screens generate **advertising revenue from pharmaceutical partners**. When a screen fails, three things happen:
+> "The company operates 150,000 IoT devices—HealthScreen displays—across 30,000 provider offices nationwide. These screens generate **advertising revenue from pharmaceutical partners**. Here's the challenge:
 > 
-> 1. **Lost Revenue**: Every hour offline means lost ad impressions and revenue
-> 2. **High Costs**: Field dispatch costs $150-300 per visit
-> 3. **Unpredictable Downtime**: Reactive maintenance means you don't know what's failing until it's down
+> 1. **10%+ Offline Rate**: About 15,000 devices are offline at any time—that's revenue walking out the door
+> 2. **Wi-Fi Dependency**: 90%+ of devices run on the provider's Wi-Fi—when they change their password, the device goes dark
+> 3. **Wrong Triage**: We're dispatching $185 technicians for problems that could be fixed with a phone call
 > 
-> Today I'll show you how Snowflake Intelligence and Cortex Agents solve all three with **predictive AI**."
+> Today I'll show you how Snowflake Intelligence and Cortex Agents solve this with **intelligent failure classification**—knowing whether to call the office or dispatch a tech."
 
 **Actions:**
 1. Open **Snowflake Intelligence** (AI & ML → Snowflake Intelligence)
@@ -182,7 +200,7 @@ Give me a summary of our device fleet health and business impact
 ```
 
 #### 👔 Who In The Room Cares
-| PatientPoint Attendee | What They're Listening For |
+| Attendee | What They're Listening For |
 |-----------------------|---------------------------|
 | **Mike Walsh (COO)** | "How healthy is my fleet? What needs attention?" |
 | **Patrick Arnold (CTO)** | "Can I get this insight without custom dashboards?" |
@@ -232,16 +250,16 @@ GROUP BY STATUS;
 SELECT RISK_LEVEL, COUNT(*) FROM V_DEVICE_HEALTH_SUMMARY GROUP BY RISK_LEVEL;
 ```
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **Demo: 100 devices** | **Production: 500,000 devices** from your device management system | Data pipeline from IoT platform |
 | **Health Score formula** (CPU, memory, temp, errors) | Your actual **device health metrics** + custom weights | Configure in `V_DEVICE_HEALTH_SUMMARY` |
 | **Risk thresholds** (CRITICAL >75°C, etc.) | Your **operational thresholds** based on historical failure data | Update risk classification logic |
 | **Hourly telemetry** | Your **actual telemetry frequency** (could be 5-min, 15-min) | Adjust data ingestion pipeline |
 
-#### 🏗️ PatientPoint Implementation Conversation Starters
+#### 🏗️ Implementation Conversation Starters
 
 > **ASK THE CUSTOMER:**
 > - "Where does your device telemetry come from today? AWS IoT? Azure? Custom platform?"
@@ -251,13 +269,18 @@ SELECT RISK_LEVEL, COUNT(*) FROM V_DEVICE_HEALTH_SUMMARY GROUP BY RISK_LEVEL;
 **SAY THIS:**
 > *"This demo uses 100 representative devices. In production, this same query scales to your 500,000 devices—Snowflake handles the compute. The health score formula and risk thresholds are fully configurable based on your historical failure patterns."*
 
-#### 📝 Expected Response Highlights
+#### Expected Response Highlights
 - **Fleet Health Score**: ~71/100 (Good performance)
-- **Device Status**: 92 online, 5 degraded, 3 offline
-- **Risk Distribution**: 3 CRITICAL, 4 HIGH, 67 MEDIUM, 26 LOW
-- **Uptime**: ~94.5%
-- **Revenue Loss**: $0 historical (resolved incidents)
+- **Device Status**: ~85 online, 5 degraded, 10 offline (10% offline rate)
+- **Risk Distribution**: 10 CRITICAL, 4 HIGH, 60 MEDIUM, 26 LOW
+- **Uptime**: ~90% (Phase 1 target: 95%)
+- **Network Type**: 90% PROVIDER_WIFI, 8% COMPANY_MANAGED, 2% CELLULAR
 - **NPS Score**: +8.6
+
+#### NEW: Network Dependency Context
+
+**SAY THIS:**
+> *"Notice the NETWORK_TYPE breakdown—90% of our devices run on provider Wi-Fi. This is why the 'last gasp' analysis is so critical. When a device goes offline, we need to know: Is this a Wi-Fi password change (call the office) or a hardware failure (dispatch a tech)?"*
 
 #### ⚠️ Objection Handling
 
@@ -271,7 +294,50 @@ SELECT RISK_LEVEL, COUNT(*) FROM V_DEVICE_HEALTH_SUMMARY GROUP BY RISK_LEVEL;
 > *"A health score of 71 means the fleet is in 'Good' condition. Perfect would be 100, but that's unrealistic for a 500K device fleet. What matters is identifying the devices that need attention—and the AI just surfaced exactly which 7 devices require action."*
 
 #### 🔄 Transition
-> *"Good overview—we see a fleet health score of 71, with 7 devices needing attention. But I want to make those 3 offline devices more tangible. Let me show you exactly how long they've been down..."*
+> *"Good overview—we see a fleet health score of 71, with 10% offline. That 10% is the problem we're solving. Let me show you exactly how long they've been down and WHY—this is where 'last gasp' analysis comes in..."*
+
+---
+
+### Q1c: Last Gasp Failure Classification (NEW - KEY DIFFERENTIATOR)
+
+```
+Why did device DEV-025 go offline? Show me the failure classification.
+```
+
+#### Who In The Room Cares
+| Attendee | What They're Listening For |
+|-----------------------|---------------------------|
+| **Patrick Arnold (CTO)** | "This is intelligent triage—not just alerting" |
+| **Jonathan Richman (SVP Engineering)** | "How does it know Wi-Fi vs hardware?" |
+| **Mike Walsh (COO)** | "So we don't waste $185 dispatches on phone calls" |
+
+#### WHY This Matters (Business Outcomes)
+| Business Outcome | How This Prompt Demonstrates It |
+|------------------|--------------------------------|
+| **Smart Triage** | Call office for Wi-Fi, dispatch for hardware |
+| **Cost Avoidance** | $185 dispatch avoided when it's a password change |
+| **Faster Resolution** | Phone call = 10 min vs dispatch = 4 hours |
+
+#### Expected Response Highlights
+- **Device**: DEV-025 (Appleton, WI)
+- **Classified Cause**: WIFI_PASSWORD_CHANGE (92% confidence)
+- **Signal Pattern**: SUDDEN_DROP (-45 to -88 dBm in <2 minutes)
+- **Last Metrics**: CPU normal (52°C), Memory normal (45%), No errors
+- **Recommendation**: CALL OFFICE to get new Wi-Fi password
+
+#### Key Talking Points
+
+**SAY THIS:**
+> *"Watch this—the AI analyzed the 'last gasp' telemetry and classified this as a Wi-Fi password change with 92% confidence. How did it know? The signal dropped SUDDENLY from good (-45 dBm) to poor (-88 dBm) in under 2 minutes. But CPU, memory, and error count were all NORMAL. That pattern says: 'The device is healthy, but can't see the network.' Classic Wi-Fi password change."*
+
+**For Mike Walsh (COO):**
+> *"Mike, without this classification, we'd dispatch a $185 technician. Instead, we call the office, get the new password, and reconnect remotely. That's $185 saved per incident—and at 10% offline rate, that adds up fast."*
+
+**Contrast with hardware failure:**
+> *"Now compare that to DEV-031—it shows HARDWARE_FAILURE. Why? Signal was STABLE, but CPU was at 78°C with 47 errors logged. That device needs a technician. Same offline status, completely different resolution path."*
+
+#### Transition
+> *"That's the power of 'last gasp' analysis—intelligent failure classification. Now let me show you the full revenue picture..."*
 
 ---
 
@@ -282,7 +348,7 @@ How long have the offline devices been down and what's the revenue impact?
 ```
 
 #### 👔 Who In The Room Cares
-| PatientPoint Attendee | What They're Listening For |
+| Attendee | What They're Listening For |
 |-----------------------|---------------------------|
 | **Mike Walsh (COO)** | "How much is this costing us RIGHT NOW?" |
 | **JT Grant (VP Ad Tech)** | "How many impressions are we losing?" |
@@ -318,7 +384,7 @@ How much advertising revenue are we losing from device downtime?
 ```
 
 #### 👔 Who In The Room Cares
-| PatientPoint Attendee | What They're Listening For |
+| Attendee | What They're Listening For |
 |-----------------------|---------------------------|
 | **Mike Walsh (COO)** | "What's the dollar impact of device issues?" |
 | **JT Grant (VP Ad Tech)** | "Are we meeting pharma partner SLAs?" |
@@ -367,15 +433,15 @@ ORDER BY TOTAL_REVENUE_LOSS_USD DESC;
 SELECT * FROM DEVICE_DOWNTIME ORDER BY DOWNTIME_START DESC;
 ```
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **$8-$25/hr ad revenue** | Your **actual CPM rates** by device type, location, pharma partner | Import from ad platform (e.g., GAM, direct contracts) |
 | **Monthly impressions** (9K-27K) | Your **actual impression data** from ad server | Real-time or daily sync from ad platform |
 | **Downtime tracking** | Your **actual outage data** from monitoring system | Connect to alerting/monitoring tool |
 
-**Key PatientPoint Data Sources:**
+**Key Data Sources:**
 - **Ad Revenue**: Google Ad Manager, direct pharma contracts, CPM by placement
 - **Impressions**: Real-time ad server logs, viewability metrics
 - **Downtime**: Device management platform alerts, heartbeat failures
@@ -413,7 +479,7 @@ What's our annual field service cost and projected savings with predictive maint
 ```
 
 #### 👔 Who In The Room Cares
-| PatientPoint Attendee | What They're Listening For |
+| Attendee | What They're Listening For |
 |-----------------------|---------------------------|
 | **Mike Walsh (COO)** | "What's the bottom-line impact? Justify the investment." |
 | **Patrick Arnold (CTO)** | "What's the ROI timeline? Is this worth the build?" |
@@ -427,7 +493,7 @@ What's our annual field service cost and projected savings with predictive maint
 | **Operational Efficiency** | 52% reduction in field service costs |
 | **ROI Timeline** | 4:1 return, typically payback in <1 year |
 
-> **KEY INSIGHT FOR CFO:** *"This is your headline number: $96 million in annual savings from 52% reduction in field dispatches. Conservative estimate—doesn't include revenue protection."*
+> **KEY INSIGHT FOR CFO:** *"This is your headline number: $29 million in annual savings from 52% reduction in field dispatches at 150K devices. Conservative estimate—doesn't include revenue protection."**
 
 #### 📡 Source Systems Simulated
 | Demo Data | Production Source | Integration Method |
@@ -440,8 +506,8 @@ What's our annual field service cost and projected savings with predictive maint
 #### 📊 Business Outcomes Demonstrated
 | Outcome | What We're Proving |
 |---------|-------------------|
-| **Cost Baseline Established** | $185M/year at 500K devices |
-| **Savings Projection** | $96M/year (52% reduction) |
+| **Cost Baseline Established** | $55M/year at 150K devices |
+| **Savings Projection** | $29M/year (52% reduction) |
 | **Remote Fix Economics** | $185 dispatch vs $25 remote = $160 saved per fix |
 
 #### 🗄️ Data Being Used
@@ -463,23 +529,23 @@ GROUP BY RESOLUTION_TYPE;
 ```
 
 **SAY THIS:**
-> *"This is the ROI story: we spend $185M annually on field dispatches at 500K devices. With 60%+ remote resolution, we're projecting $96M in annual savings—that's a 52% cost reduction. This aligns with what we've seen at customers like FIIX, who achieved 10x improvement in maintenance insights."*
+> *"This is the ROI story: we spend $55M annually on field dispatches at 150K devices across 30K offices. With 60%+ remote resolution, we're projecting $29M in annual savings—that's a 52% cost reduction. And with 'last gasp' failure classification, we can push remote resolution even higher by calling offices for Wi-Fi changes instead of dispatching techs."**
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **$185 avg dispatch cost** | Your **actual dispatch costs** (labor, travel, parts) | Import from ServiceNow/field service system |
 | **$25 remote fix cost** | Your **actual remote support costs** (labor time) | Calculate from helpdesk data |
 | **2 issues/device/year assumption** | Your **actual historical issue rate** | Analyze from maintenance history |
 
-**PatientPoint-Specific ROI Inputs:**
+**Specific ROI Inputs:**
 - **Labor costs**: Technician hourly rate × avg time on-site
 - **Travel costs**: Mileage reimbursement, fleet costs
 - **Parts costs**: Average parts per dispatch
 - **Remote costs**: NOC hourly rate × avg resolution time
 
-#### 🏗️ PatientPoint Implementation Conversation Starters
+#### 🏗️ Implementation Conversation Starters
 
 > **ASK THE CUSTOMER:**
 > - "What's your actual cost per field dispatch? (We're using $185 as industry average)"
@@ -493,12 +559,12 @@ GROUP BY RESOLUTION_TYPE;
 **SAY THIS (if asked about the numbers):**
 > *"These cost assumptions are configurable. In a POC, we'd plug in your actual dispatch costs from ServiceNow and your remote support costs from your helpdesk system. The ROI calculation updates automatically."*
 
-#### 📝 Expected Response Highlights
-- **Annual Field Service Cost**: $185M (at 500K devices)
+#### Expected Response Highlights
+- **Annual Field Service Cost**: $55M (at 150K devices across 30K offices)
 - **Avg Dispatch Cost**: $185 per incident
 - **Avg Remote Fix Cost**: $25 per incident
-- **Projected Annual Savings**: $96M (52% reduction)
-- **Dispatches Avoided**: 600,000 annually
+- **Projected Annual Savings**: $29M (52% reduction)
+- **Dispatches Avoided**: ~180,000 annually
 - **Remote Fix Rate**: 60-75%
 - **ROI**: ~4:1 return
 
@@ -520,11 +586,11 @@ GROUP BY RESOLUTION_TYPE;
 
 **The calculation:**
 ```
-$185M = 500,000 devices × 2 issues/device/year × $185/dispatch
-$96M  = 1,000,000 dispatches × 60% remote × ($185 - $25) saved
+$55M = 150,000 devices × 2 issues/device/year × $185/dispatch
+$29M = 300,000 dispatches × 60% remote × ($185 - $25) saved
 ```
 
-**The assumptions to validate with PatientPoint:**
+**The assumptions to validate:**
 | Assumption | Our Value | Question to Ask |
 |------------|-----------|-----------------|
 | Issues per device/year | 2 | "How many issues per device do you see today?" |
@@ -537,7 +603,7 @@ $96M  = 1,000,000 dispatches × 60% remote × ($185 - $25) saved
 
 #### 🎤 Executive Talking Point
 **SAY THIS after the response:**
-> *"This is the headline number for your CFO: $96 million in annual savings from a 52% reduction in field dispatches. And this is conservative—it doesn't include revenue protection from faster resolution or the customer satisfaction gains from proactive maintenance."*
+> *"This is the headline number for your CFO: $29 million in annual savings from a 52% reduction in field dispatches at 150K devices. And this is conservative—it doesn't include revenue protection from faster resolution, the customer satisfaction gains from proactive maintenance, or the churn reduction from happier providers."**
 
 #### 🔄 Transition
 > *"That's the projection at scale. Let me show you the actual savings we're achieving right now in the demo data..."*
@@ -551,7 +617,7 @@ How much money have we saved this month from remote fixes vs field dispatches?
 ```
 
 #### 👔 Who In The Room Cares
-| PatientPoint Attendee | What They're Listening For |
+| Attendee | What They're Listening For |
 |-----------------------|---------------------------|
 | **Mike Walsh (COO)** | "Proof that this works—actual savings, not projections" |
 | **Jonathan Richman (SVP Engineering)** | "Is the remote fix capability delivering?" |
@@ -614,7 +680,7 @@ ORDER BY CREATED_AT DESC;
 **Connect the unit economics:**
 > *"Let me connect the numbers: $185 saved per remote fix × 7 tickets = $1,295. At production scale with 600,000 avoided dispatches, that's the $96M. Same math, bigger scale."*
 
-#### 🏗️ PatientPoint Implementation Conversation Starters
+#### 🏗️ Implementation Conversation Starters
 
 > **ASK JENNIFER (Data Engineering):**
 > - "Do you track resolution type (remote vs dispatch) in ServiceNow today?"
@@ -664,15 +730,15 @@ WHERE FOLLOW_UPS_REQUIRED > 0;
 SELECT * FROM PROVIDER_FEEDBACK ORDER BY FEEDBACK_DATE DESC;
 ```
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **NPS Score (0-10)** | Your **actual provider NPS surveys** | Import from survey tool (Qualtrics, etc.) |
 | **Satisfaction ratings** | Your **CRM feedback data** | Sync from Salesforce/HubSpot |
 | **Follow-up flags** | Your **customer success workflow** | Connect to CS platform |
 
-**PatientPoint Data Sources:**
+**Data Sources:**
 - **Provider Surveys**: Qualtrics, SurveyMonkey, or in-app feedback
 - **CRM Data**: Salesforce, HubSpot provider records
 - **Support Tickets**: Zendesk, ServiceNow customer complaints
@@ -686,14 +752,14 @@ SELECT * FROM PROVIDER_FEEDBACK ORDER BY FEEDBACK_DATE DESC;
 
 ---
 
-### ✅ Executive Act Summary
+### Executive Act Summary
 
-| FOCUS Result | Metric Shown | Demo Value | Production Scale |
-|--------------|--------------|------------|------------------|
-| 💵 **Revenue Protection** | Ad revenue loss | $0 | Millions protected |
-| 💰 **40-60% Cost Reduction** | Annual savings | $2,500+/month | **$50M+/year** |
-| 🎯 **Prediction Accuracy** | Remote fix rate | 60-70% | 350K dispatches avoided |
-| ⭐ **Customer Satisfaction** | NPS Score | 8.6 | Retention driver |
+| FOCUS Result | Metric Shown | Demo Value | Production Scale (150K) |
+|--------------|--------------|------------|-------------------------|
+| **Revenue Protection** | Ad revenue loss | $0 when fixed fast | Millions protected |
+| **40-60% Cost Reduction** | Annual savings | $2,500+/month | **$29M+/year** |
+| **Intelligent Triage** | Failure classification | Wi-Fi vs Hardware | Call Office vs Dispatch |
+| **Customer Satisfaction** | NPS Score | 8.6 | Reduce 7-8% churn |
 
 ---
 
@@ -789,15 +855,15 @@ WHERE RISK_LEVEL IN ('CRITICAL', 'HIGH')
 ORDER BY CASE RISK_LEVEL WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2 END;
 ```
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **CPU temp thresholds** (65°C, 75°C) | Your **device specs** and historical failure temps | Analyze past failures to set thresholds |
 | **Risk classification rules** | Your **operational SLAs** (e.g., hospital vs clinic) | Business logic in view definition |
 | **Telemetry metrics** | Your **actual IoT data points** (could include ambient temp, display brightness) | Map to existing telemetry schema |
 
-**PatientPoint-Specific Considerations:**
+**Specific Considerations:**
 - **Device Models**: Different thresholds for Pro 55, Lite 32, Max 65?
 - **Facility Types**: Hospitals might have stricter SLAs than clinics
 - **Geographic Factors**: Higher acceptable temps in warm climates?
@@ -987,9 +1053,9 @@ ORDER BY FAILURE_PROBABILITY_PCT DESC;
 **SAY THIS:**
 > *"This is the power of predictive maintenance—we can see failures before they happen. The model looks at 30 days of telemetry: temperature trends, memory patterns, error acceleration. This gives us time to schedule proactive maintenance instead of reacting to emergencies."*
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **30-day telemetry window** | Your **optimal prediction window** (could be 7, 14, 60 days) | Tune based on failure patterns |
 | **Rule-based prediction** | Your choice: **Cortex ML models** for higher accuracy | Train on historical failure data |
@@ -1001,7 +1067,7 @@ ORDER BY FAILURE_PROBABILITY_PCT DESC;
 3. **Anomaly Detection**: Identify unusual patterns automatically
 4. **Time-Series Forecasting**: Predict when metrics will cross thresholds
 
-**PatientPoint ML Data Requirements:**
+**ML Data Requirements:**
 - **Positive Examples**: Historical failures with telemetry before failure
 - **Negative Examples**: Devices that didn't fail (for contrast)
 - **Minimum Data**: 6-12 months of telemetry + failure records
@@ -1112,7 +1178,7 @@ Can you attempt a remote restart on device DEV-003 to fix the high CPU issue?
 ```
 
 #### 👔 Who In The Room Cares
-| PatientPoint Attendee | What They're Listening For |
+| Attendee | What They're Listening For |
 |-----------------------|---------------------------|
 | **Patrick Arnold (CTO)** | "This is agentic AI—it can take action, not just answer questions" |
 | **Jonathan Richman (SVP Engineering)** | "How does this integrate with our device API?" |
@@ -1170,15 +1236,15 @@ ORDER BY TIMESTAMP DESC;
 **SAY THIS:**
 > *"Notice what just happened—the agent didn't just recommend an action, it triggered a simulated API call to the device management system. In production, this would actually restart the device via External Functions. Every action is logged for compliance and audit. Cortex Agents aren't just chatbots—they can execute actions."*
 
-#### 🔧 Customization for PatientPoint
+#### 🔧 Customization Notes
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **Simulated API calls** | **Real External Functions** to your systems | Snowflake External Functions setup |
 | **Log table for audit** | Your **compliance/audit system** | Could write to Splunk, Datadog |
 | **Device commands** | Your **device management API** commands | Map to your IoT platform SDK |
 
-**PatientPoint Integration Points:**
+**Integration Points:**
 
 | System | Integration Method | What It Does |
 |--------|-------------------|--------------|
@@ -1202,7 +1268,7 @@ ORDER BY TIMESTAMP DESC;
 └─────────────────┘
 ```
 
-#### 🏗️ PatientPoint Implementation Conversation Starters
+#### 🏗️ Implementation Conversation Starters
 
 > **ASK JONATHAN (SVP Engineering):**
 > - "What's your device management platform? AWS IoT? Azure? Custom?"
@@ -1422,16 +1488,16 @@ WHERE ISSUE_SUMMARY LIKE '%network%' OR ISSUE_SUMMARY LIKE '%connectivity%';
 | 📖 Historical learning | What worked at this location | Pattern recognition |
 | 🧰 Parts list | Come prepared | No return trips |
 
-#### 🔧 Customization for PatientPoint (Field Tech Section)
+#### 🔧 Customization Notes (Field Tech Section)
 
-| What We Used | What PatientPoint Would Use | Integration Effort |
+| What We Used | What You Would Use | Integration Effort |
 |--------------|----------------------------|-------------------|
 | **Work Orders table** | **ServiceNow / Field Service system** | Bi-directional sync |
 | **Technician roster** | **HR/scheduling system** | Import technician data |
 | **Troubleshooting KB** | **Your knowledge base** (Confluence, SharePoint) | Ingest into Cortex Search |
 | **Parts inventory** | **Inventory management system** | Connect to parts database |
 
-**PatientPoint Knowledge Base Sources:**
+**Knowledge Base Sources:**
 - **Existing Documentation**: Device manuals, troubleshooting guides
 - **Tribal Knowledge**: Capture from senior technicians
 - **Vendor Resources**: Manufacturer documentation
@@ -1505,28 +1571,29 @@ What training data do we have available for building ML models?
 
 ### Business Impact at Scale (FOCUS Results Delivered)
 
-> "With Snowflake Intelligence and Cortex Agents, PatientPoint achieves all three FOCUS results:
+> "With Snowflake Intelligence and Cortex Agents, you achieve all three FOCUS results:
 > 
-> **RESULT 1: 40-60% Cost Reduction** ✅
-> - 70%+ issues resolved remotely → 350,000 avoided dispatches annually
-> - $185 saved per remote fix → **$50M+/year in avoided costs**
+> **RESULT 1: 40-60% Cost Reduction** 
+> - 70%+ issues resolved remotely → 180,000+ avoided dispatches annually
+> - $185 saved per remote fix → **$29M+/year in avoided costs**
+> - PLUS: 'Last gasp' classification saves additional dispatches by identifying Wi-Fi changes
 > 
-> **RESULT 2: Revenue Protection** ✅
-> - Predictive maintenance prevents unplanned downtime
-> - Zero ad revenue loss from device failures
-> - Proactive fixes before screens go dark
+> **RESULT 2: Phase 1 Target: 95% Uptime** 
+> - Current: ~90% (10% offline rate)
+> - Intelligent failure classification enables faster resolution
+> - Call office for Wi-Fi = 10 min vs dispatch for hardware = 4+ hours
 > 
-> **RESULT 3: >85% Predictive Accuracy** ✅
-> - 24-48 hour advance warning of failures
-> - Pattern recognition from 72K+ telemetry records
-> - Validated against actual outcomes
+> **RESULT 3: Reduced Provider Churn** 
+> - Current: 7-8% annual churn
+> - Device reliability directly impacts provider satisfaction
+> - Proactive maintenance = happier providers = better retention
 > 
 > All running natively in Snowflake—Cortex for AI, full governance through your existing security model, complete audit trail."
 
 ### 🎯 Closing Remarks by Attendee Interest
 
 **For Mike Walsh (COO):**
-> *"Mike, the bottom line: $96M in projected annual savings from a 52% reduction in field dispatches. This is ROI you can take to the board."*
+> *"Mike, the bottom line: $29M in projected annual savings from a 52% reduction in field dispatches at 150K devices. Plus, 'last gasp' classification means even more savings by routing Wi-Fi issues to phone calls, not truck rolls."**
 
 **For Patrick Arnold (CTO):**
 > *"Patrick, this runs entirely in Snowflake—no external ML infrastructure, same governance model, same security perimeter. Cortex Agents are the orchestration layer."*
@@ -1546,7 +1613,7 @@ What training data do we have available for building ML models?
 ### Call to Action
 > "Would you like to see how this could work with your data? We can set up a proof-of-concept with your actual device telemetry in days, not months."
 
-### 🤔 Discovery Questions for PatientPoint
+### 🤔 Discovery Questions
 
 > **Before we wrap, I'd love to understand:**
 > 1. "What does your device telemetry pipeline look like today?" *(Jennifer)*
@@ -1568,20 +1635,21 @@ What training data do we have available for building ML models?
 
 ---
 
-## 📊 Data Inventory (For Auditability Questions)
+## Data Inventory (For Auditability Questions)
 
-> **Note:** Demo uses 100 representative devices. Production scales to 500,000.
+> **Note:** Demo uses 100 representative devices. Production scales to 150,000 across 30,000 offices.
 
 | Table | Demo Records | Production Scale | Purpose | Key Columns |
 |-------|--------------|------------------|---------|-------------|
-| `DEVICE_INVENTORY` | 100 | 500,000 | Device master data | DEVICE_ID, STATUS, HOURLY_AD_REVENUE_USD |
-| `DEVICE_TELEMETRY` | ~72,000 | ~360M/month | Health metrics (hourly) | CPU_TEMP, CPU_USAGE, MEMORY_USAGE, ERROR_COUNT |
-| `MAINTENANCE_HISTORY` | 24 | ~50,000/month | Past service tickets | ISSUE_TYPE, RESOLUTION_TYPE, COST_USD |
-| `TROUBLESHOOTING_KB` | 10 | 100+ | Fix procedures | ISSUE_CATEGORY, SUCCESS_RATE_PCT |
-| `WORK_ORDERS` | 8 | ~10,000/day | Active jobs | PRIORITY, STATUS, AI_DIAGNOSIS |
+| `DEVICE_INVENTORY` | 100 | 150,000 | Device master data | DEVICE_ID, STATUS, NETWORK_TYPE, HOURLY_AD_REVENUE_USD |
+| `DEVICE_TELEMETRY` | ~72,000 | ~108M/month | Health metrics (hourly) | CPU_TEMP, CPU_USAGE, MEMORY_USAGE, WIFI_SIGNAL_STRENGTH |
+| `DEVICE_LAST_GASP` | 5 | ~15,000/month | Failure classification | CLASSIFIED_CAUSE, SIGNAL_TREND, CLASSIFICATION_CONFIDENCE |
+| `MAINTENANCE_HISTORY` | 24 | ~15,000/month | Past service tickets | ISSUE_TYPE, RESOLUTION_TYPE, COST_USD |
+| `TROUBLESHOOTING_KB` | 14 | 100+ | Fix procedures | ISSUE_CATEGORY, SUCCESS_RATE_PCT |
+| `WORK_ORDERS` | 8 | ~3,000/day | Active jobs | PRIORITY, STATUS, AI_DIAGNOSIS |
 | `TECHNICIANS` | 6 | 500+ | Field team | COVERAGE_STATES, SPECIALIZATION |
 | `PROVIDER_FEEDBACK` | 14 | ~100,000 | Customer satisfaction | NPS_SCORE, SATISFACTION_RATING |
-| `DEVICE_DOWNTIME` | 10 | ~25,000/month | Revenue impact | DOWNTIME_HOURS, REVENUE_LOSS_USD |
+| `DEVICE_DOWNTIME` | 10 | ~7,500/month | Revenue impact | DOWNTIME_HOURS, REVENUE_LOSS_USD |
 | `EXTERNAL_ACTION_LOG` | Variable | Growing | Action audit trail | ACTION_TYPE, TIMESTAMP, PAYLOAD |
 
 ---
@@ -1615,11 +1683,11 @@ If asked about security, governance, or compliance:
 
 ---
 
-## 🗺️ PatientPoint Implementation Roadmap
+## 🗺️ Implementation Roadmap
 
 ### Phase 0: Discovery (Week 0) — Questions to Answer
 
-| Area | Questions for PatientPoint | Who to Ask |
+| Area | Questions to Ask | Who to Ask |
 |------|---------------------------|------------|
 | **Data Acquisition** | Where is device telemetry stored today? What format? | Jennifer Kelly |
 | **Data Acquisition** | How frequently is telemetry captured? (5-min, hourly?) | Jennifer Kelly |
@@ -1689,9 +1757,9 @@ If asked about security, governance, or compliance:
 
 ---
 
-## 📊 PatientPoint Data Mapping Quick Reference
+## 📊 Data Mapping Quick Reference
 
-| Demo Data | PatientPoint Equivalent | Notes |
+| Demo Data | Production Equivalent | Notes |
 |-----------|------------------------|-------|
 | `DEVICE_ID` (DEV-001) | Your device serial numbers | Primary key for all joins |
 | `FACILITY_NAME` | Provider account name | From CRM/master data |

@@ -1,4 +1,4 @@
-# 🏗️ PatientPoint Predictive Maintenance Architecture
+# 🏗️ Predictive Maintenance Architecture
 
 **Purpose:** Drive implementation conversation with customer  
 **Goal:** Identify gaps, confirm data sources, validate integration points
@@ -10,7 +10,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                                    DATA SOURCES                                          │
-│  (What PatientPoint needs to provide)                                                   │
+│  (What the company needs to provide)                                                   │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                          │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐ │
@@ -188,7 +188,7 @@
 
 ## 📋 Data Source Inventory
 
-### What PatientPoint Needs to Provide
+### What the Company Needs to Provide
 
 | Data Source | System | Data Elements | Refresh Rate | Priority |
 |-------------|--------|---------------|--------------|----------|
@@ -295,7 +295,7 @@
 
 ---
 
-## ❓ Discovery Questions for PatientPoint
+## ❓ Discovery Questions
 
 ### Data Sources
 

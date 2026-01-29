@@ -1,5 +1,5 @@
 /*******************************************************************************
- * PATIENTPOINT PREDICTIVE MAINTENANCE DEMO
+ * PREDICTIVE DEVICE MAINTENANCE DEMO
  * Part 5: Predictive Failure Simulation
  * 
  * This script demonstrates:
@@ -19,7 +19,7 @@
 -- ============================================================================
 USE ROLE SF_INTELLIGENCE_DEMO;
 USE WAREHOUSE COMPUTE_WH;
-USE DATABASE PATIENTPOINT_MAINTENANCE;
+USE DATABASE DEVICE_MAINTENANCE;
 USE SCHEMA DEVICE_OPS;
 
 -- ============================================================================
@@ -455,4 +455,89 @@ FROM V_FAILURE_PREDICTIONS
 WHERE PREDICTED_HOURS_TO_FAILURE IS NOT NULL
 AND PREDICTED_HOURS_TO_FAILURE <= 48
 ORDER BY PREDICTED_HOURS_TO_FAILURE ASC;
+
+-- ============================================================================
+-- PART 6: LAST GASP ANALYSIS VIEW (NEW)
+-- Analyzes failure patterns from "last gasp" telemetry
+-- CRITICAL: Enables classifying Wi-Fi password changes vs hardware failures
+-- ============================================================================
+
+CREATE OR REPLACE VIEW V_LAST_GASP_ANALYSIS AS
+SELECT 
+    lg.DEVICE_ID,
+    d.DEVICE_MODEL,
+    d.FACILITY_NAME,
+    CONCAT(d.LOCATION_CITY, ', ', d.LOCATION_STATE) as LOCATION,
+    d.NETWORK_TYPE,
+    lg.OFFLINE_TIMESTAMP,
+    lg.LAST_SIGNAL_STRENGTH,
+    lg.LAST_CPU_TEMP,
+    lg.LAST_MEMORY_PCT,
+    lg.LAST_ERROR_COUNT,
+    lg.SIGNAL_TREND,
+    lg.SIGNAL_DROP_RATE,
+    lg.CLASSIFIED_CAUSE,
+    lg.CLASSIFICATION_CONFIDENCE,
+    lg.CLASSIFICATION_REASON,
+    lg.RESOLVED_TIMESTAMP,
+    lg.ACTUAL_CAUSE,
+    lg.RESOLUTION_ACTION,
+    DATEDIFF('hour', lg.OFFLINE_TIMESTAMP, COALESCE(lg.RESOLVED_TIMESTAMP, CURRENT_TIMESTAMP())) as HOURS_OFFLINE,
+    CASE WHEN lg.RESOLVED_TIMESTAMP IS NULL THEN 'ACTIVE' ELSE 'RESOLVED' END as INCIDENT_STATUS,
+    CASE 
+        WHEN lg.CLASSIFIED_CAUSE = 'WIFI_PASSWORD_CHANGE' THEN 'Call provider office to get new Wi-Fi password'
+        WHEN lg.CLASSIFIED_CAUSE = 'HARDWARE_FAILURE' THEN 'Dispatch technician for hardware repair/replacement'
+        WHEN lg.CLASSIFIED_CAUSE = 'NETWORK_OUTAGE' THEN 'Wait for provider network to recover; contact office if >4hrs'
+        WHEN lg.CLASSIFIED_CAUSE = 'POWER_LOSS' THEN 'Attempt remote restart after power restoration'
+        ELSE 'Investigate further before action'
+    END as RECOMMENDED_RESOLUTION
+FROM DEVICE_LAST_GASP lg
+JOIN DEVICE_INVENTORY d ON lg.DEVICE_ID = d.DEVICE_ID
+ORDER BY lg.OFFLINE_TIMESTAMP DESC;
+
+-- Summary view: Failure cause distribution
+CREATE OR REPLACE VIEW V_LAST_GASP_SUMMARY AS
+SELECT 
+    CLASSIFIED_CAUSE,
+    COUNT(*) as INCIDENT_COUNT,
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) as PERCENTAGE,
+    ROUND(AVG(CLASSIFICATION_CONFIDENCE), 2) as AVG_CONFIDENCE,
+    SUM(CASE WHEN RESOLVED_TIMESTAMP IS NULL THEN 1 ELSE 0 END) as ACTIVE_INCIDENTS,
+    SUM(CASE WHEN RESOLVED_TIMESTAMP IS NOT NULL THEN 1 ELSE 0 END) as RESOLVED_INCIDENTS,
+    CASE 
+        WHEN CLASSIFIED_CAUSE = 'WIFI_PASSWORD_CHANGE' THEN 'CALL_OFFICE'
+        WHEN CLASSIFIED_CAUSE = 'HARDWARE_FAILURE' THEN 'DISPATCH_TECH'
+        WHEN CLASSIFIED_CAUSE = 'NETWORK_OUTAGE' THEN 'WAIT_MONITOR'
+        WHEN CLASSIFIED_CAUSE = 'POWER_LOSS' THEN 'REMOTE_RESTART'
+        ELSE 'INVESTIGATE'
+    END as PRIMARY_RESOLUTION_PATH
+FROM DEVICE_LAST_GASP
+GROUP BY CLASSIFIED_CAUSE
+ORDER BY INCIDENT_COUNT DESC;
+
+-- Network type impact analysis
+CREATE OR REPLACE VIEW V_NETWORK_TYPE_FAILURE_ANALYSIS AS
+SELECT 
+    d.NETWORK_TYPE,
+    COUNT(*) as TOTAL_DEVICES,
+    SUM(CASE WHEN d.STATUS = 'OFFLINE' THEN 1 ELSE 0 END) as OFFLINE_DEVICES,
+    ROUND(SUM(CASE WHEN d.STATUS = 'OFFLINE' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as OFFLINE_RATE_PCT,
+    (SELECT COUNT(*) FROM DEVICE_LAST_GASP lg2 
+     JOIN DEVICE_INVENTORY d2 ON lg2.DEVICE_ID = d2.DEVICE_ID 
+     WHERE d2.NETWORK_TYPE = d.NETWORK_TYPE 
+     AND lg2.CLASSIFIED_CAUSE = 'WIFI_PASSWORD_CHANGE') as WIFI_PASSWORD_INCIDENTS,
+    'Provider Wi-Fi devices are 5x more likely to go offline due to credential changes' as INSIGHT
+FROM DEVICE_INVENTORY d
+GROUP BY d.NETWORK_TYPE
+ORDER BY OFFLINE_RATE_PCT DESC;
+
+-- Verification queries for last gasp analysis
+SELECT '=== Last Gasp Analysis ===' as SECTION;
+SELECT * FROM V_LAST_GASP_ANALYSIS;
+
+SELECT '=== Failure Cause Summary ===' as SECTION;
+SELECT * FROM V_LAST_GASP_SUMMARY;
+
+SELECT '=== Network Type Impact ===' as SECTION;
+SELECT * FROM V_NETWORK_TYPE_FAILURE_ANALYSIS;
 
