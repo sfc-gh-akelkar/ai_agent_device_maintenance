@@ -71,7 +71,6 @@ ai_agent_device_maintenance/
 │   └── 07_expanded_training_data.sql      # Optional: 6 months training data
 ├── notebooks/
 │   └── ML_Device_Failure_Prediction.ipynb # XGBoost training & Model Registry (REQUIRED)
-├── DEMO_SCRIPT.md                         # 20-minute demo walkthrough
 ├── ARCHITECTURE.md                        # Implementation architecture & diagrams
 └── README.md                              # This file
 ```
@@ -133,39 +132,37 @@ Open and execute **all cells** in `notebooks/ML_Device_Failure_Prediction.ipynb`
 
 ---
 
-## 🎬 Demo Script
+## Try It Out
 
-For the complete **20-minute demo script** with talking points and prompts, see:
+Once setup is complete, open **Snowflake Intelligence** and select the **Device Maintenance Assistant**. Here are sample questions organized by persona:
 
-📄 **[DEMO_SCRIPT.md](DEMO_SCRIPT.md)**
+### Executive / Leadership
 
-### Key Personas
+| Question | What It Shows |
+|----------|---------------|
+| Give me a summary of our device fleet health and business impact | Fleet overview: online/offline counts, health score, uptime, cost savings |
+| How much advertising revenue are we losing from device downtime? | Revenue impact: monthly loss, opportunity cost per 1% uptime improvement |
+| What's our annual field service cost and projected savings? | ROI story: $55M baseline, $29M projected savings (52% reduction) |
+| How much have we saved this month from remote fixes? | Actual cost avoidance from remote resolutions vs. dispatches |
+| What is our customer satisfaction score? | NPS, satisfaction ratings, provider feedback summary |
 
-| Persona | Focus |
-|---------|-------|
-| Executive (C-Suite) | ROI, fleet health, revenue protection |
-| Operations Center | Risk triage, predictions, dispatch decisions |
-| Field Technician | Work orders, troubleshooting, repair guidance |
+### Operations Center
 
-## Sample Prompts
+| Question | What It Shows |
+|----------|---------------|
+| Which devices have critical or high risk levels? | Prioritized list of at-risk devices with health scores |
+| Why did device DEV-025 go offline? Is it a Wi-Fi password change? | **Last Gasp failure classification** - the key differentiator: classifies cause with confidence level |
+| How many offline devices are due to Wi-Fi changes vs hardware failures? | Failure cause breakdown across the fleet |
+| Can any of these be fixed remotely? | Smart triage: call office vs. dispatch tech vs. wait and monitor |
+| Which devices are predicted to fail in 48 hours? | Proactive maintenance: XGBoost predictions with risk levels |
 
-```
-# Executive
-Give me a summary of our device fleet health and business impact
-What's our annual field service cost and projected savings?
+### Field Technician
 
-# Operations - Failure Classification (KEY DIFFERENTIATOR)
-Why did device DEV-025 go offline? Is it a Wi-Fi password change?
-How many offline devices are due to Wi-Fi changes vs hardware failures?
-
-# Operations - Triage
-Which devices have critical or high risk levels right now?
-Can any of these be fixed remotely?
-
-# Technician
-What work orders are assigned to Marcus Johnson today?
-What's wrong with device DEV-003 and how do I fix it?
-```
+| Question | What It Shows |
+|----------|---------------|
+| What work orders are assigned to Marcus Johnson today? | Technician-specific work queue |
+| What's wrong with device DEV-003 and how do I fix it? | Diagnosis + troubleshooting steps from knowledge base |
+| Attempt a remote restart on device DEV-003 | Closed-loop action: agent executes command and logs audit trail |
 
 ---
 
